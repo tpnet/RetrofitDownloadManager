@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+
+    <Button
+        android:id="@+id/bt_handle"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:text="停止"
+        android:layout_alignParentRight="true"
+
+        />
+    
+    
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="名称"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:textSize="18sp"
+        android:layout_toLeftOf="@id/bt_handle"
+        />
+    
+
+
+    <TextView
+        android:id="@+id/tv_down_length"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="123MB/2GB"
+        android:gravity="right"
+        android:layout_below="@id/tv_name"
+        android:layout_alignParentRight="true"
+        /> 
+    
+    
+    <ProgressBar
+        android:id="@+id/prb_down"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_name"
+        android:layout_toLeftOf="@id/tv_down_length"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+        />
+    
+
+    
+</RelativeLayout>
