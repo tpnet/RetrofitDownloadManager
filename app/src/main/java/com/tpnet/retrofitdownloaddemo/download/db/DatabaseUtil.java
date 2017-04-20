@@ -17,6 +17,7 @@ import com.tpnet.retrofitdownloaddemo.download.DownState;
 import java.util.List;
 
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -147,10 +148,19 @@ public class DatabaseUtil {
 
 
     //更新下载状态
-    public void updateState(@DownState int state, String url){
-        DownInfo.UpdateDownState updateDownState = new DownInfoModel.UpdateDownState(db.getWritableDatabase());
-        updateDownState.bind(state,url);
-        updateDownState.program.executeUpdateDelete();
+    public Observable<Integer> updateState(@DownState final int state, final String url){
+        return Observable.just(url)
+                .map(new Func1<String, Integer>() {
+                    @Override
+                    public Integer call(String s) {
+                        DownInfo.UpdateDownState updateDownState = new DownInfoModel.UpdateDownState(db.getWritableDatabase());
+                        updateDownState.bind(state,s);
+                        return updateDownState.program.executeUpdateDelete();
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread());
+        
+        
     }
 
 

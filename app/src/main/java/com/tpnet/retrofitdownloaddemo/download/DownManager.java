@@ -20,7 +20,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -70,6 +72,8 @@ public class DownManager {
         if (downSubs.get(downUrl) != null) {
             Log.e("@@", "添加监听器" + downUrl);
             downSubs.get(downUrl).setListener(listener);
+            downInfos.get(downUrl).listener = listener;
+            
         }
     }
 
@@ -87,11 +91,19 @@ public class DownManager {
 
             //添加监听器
             if (info.getListener() != null) {
-                downInfos.put(info.downUrl(),
+                /*downInfos.put(info.downUrl(),
                         DownInfo.create(downInfos.get(info.downUrl())).build().setListener(info.getListener())
-                );
-                downInfos.get(info.downUrl()).setListener(info.getListener());
+                );*/
+                downInfos.get(info.downUrl()).listener = info.getListener();
                 downSubs.get(info.downUrl()).setListener(info.getListener());
+            }
+
+            if (info.getService() != null) {
+                /*downInfos.put(info.downUrl(),
+                        DownInfo.create(downInfos.get(info.downUrl())).build().setService(info.getService())
+                );*/
+                downInfos.get(info.downUrl()).setService(info.getService());
+
             }
 
             if (info.downState() == DownInfo.DOWN_ING) {
@@ -179,11 +191,18 @@ public class DownManager {
      *
      * @param info
      */
-    public void stopDown(DownInfo info) {
-        if(info.getListener() != null){
-            info.getListener().onStop();
-        }
-        handleDown(info, DownInfo.DOWN_STOP);
+    public void stopDown(final DownInfo info) {
+
+        handleDown(info, DownInfo.DOWN_STOP)
+                .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer integer) {
+                        if (downInfos.get(info.downUrl()).getListener() != null) {
+                            downInfos.get(info.downUrl()).getListener().onStop();
+                        }
+                    }
+                });
+
     }
 
 
@@ -192,11 +211,18 @@ public class DownManager {
      *
      * @param info
      */
-    public void errorDown(DownInfo info, Throwable e) {
-        if(info.getListener() != null){
-            info.getListener().onError(e);
-        }
-        handleDown(info, DownInfo.DOWN_ERROR);
+    public void errorDown(final DownInfo info, final Throwable e) {
+
+        handleDown(info, DownInfo.DOWN_ERROR)
+                .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer integer) {
+                        if (downInfos.get(info.downUrl()).getListener() != null) {
+                            downInfos.get(info.downUrl()).getListener().onError(e);
+                        }
+                    }
+                });
+
     }
 
     /**
@@ -204,27 +230,33 @@ public class DownManager {
      *
      * @param info
      */
-    public void pauseDown(DownInfo info) {
-        if(info.getListener() != null){
-            info.getListener().onPuase();
-        }
-        handleDown(info, DownInfo.DOWN_PAUSE);
+    public void pauseDown(final DownInfo info) {
+        handleDown(info, DownInfo.DOWN_PAUSE)
+                .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer integer) {
+                        if (downInfos.get(info.downUrl()).getListener() != null) {
+                            downInfos.get(info.downUrl()).getListener().onPuase();
+                        }
+                        //大于0就是更新成功
+                        Log.e("@@", "暂停影响行数" + integer);
+                    }
+                });
+
+
     }
 
     //处理下载状态
-    private void handleDown(DownInfo info, @DownState int state) {
-        if (info == null) return;
-
-        info = DownInfo.create(info).downState(state).build();
-
+    private Observable<Integer> handleDown(DownInfo info, @DownState int state) {
+        if (info == null) return null;
 
         if (downSubs.get(info.downUrl()) != null) {
-
+            //解除订阅就不会下载了
             downSubs.get(info.downUrl()).unsubscribe();
             downSubs.remove(info.downUrl());
         }
 
-        DatabaseUtil.getInstance()
+        return DatabaseUtil.getInstance()
                 .updateState(state, info.downUrl());
     }
 

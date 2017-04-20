@@ -45,6 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_name"
         android:layout_toLeftOf="@id/tv_down_length"
+        android:secondaryProgress="100"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         />
     

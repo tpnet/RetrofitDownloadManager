@@ -36,8 +36,9 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
         return service;
     }
 
-    public void setService(DownService service) {
+    public DownInfo setService(DownService service) {
         this.service = service;
+        return this;
     }
 
     public IOnDownloadListener<DownInfo> getListener() {
@@ -95,6 +96,8 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
                 .startTime(downInfo.startTime())
                 .finishTime(downInfo.finishTime());
     }
+
+
     
 
     public static Builder builder() {

@@ -108,7 +108,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
     IOnDownloadListener<DownInfo> listener = new IOnDownloadListener<DownInfo>() {
         @Override
         public void onNext(DownInfo baseDownEntity) {
-            Log.e("@@","onNext下载完成");
+            Log.e("@@","listsner onNext下载完成");
             mBtHandle.setText("打开");
             Toast.makeText(mBtHandle.getContext(), name+" 下载完成", Toast.LENGTH_SHORT).show();
         }
@@ -117,44 +117,72 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         public void onStart() {
             Log.e("@@","listsner onStart开始下载");
             mBtHandle.setText("暂停");
+            downInfo = DownInfo.create(downInfo)
+                    .downState(DownInfo.DOWN_START)
+                    .build()
+                    .setListener(downInfo.getListener())
+                    .setService(downInfo.getService());
 
         }
 
         @Override
         public void onComplete() {
-            Log.e("@@","onComplete下载完成");
+            Log.e("@@","listsner onComplete下载完成");
             mBtHandle.setText("打开");
 
+            downInfo = DownInfo.create(downInfo)
+                    .downState(DownInfo.DOWN_FINISH)
+                    .build()
+                    .setListener(downInfo.getListener())
+                    .setService(downInfo.getService());
+            
         }
 
         @Override
         public void onError(Throwable e) {
-            Log.e("@@","onError下载错误");
+            Log.e("@@","listsner onError下载错误");
             super.onError(e);
             mBtHandle.setText("重试");
 
+            downInfo = DownInfo.create(downInfo)
+                    .downState(DownInfo.DOWN_ERROR)
+                    .build()
+                    .setListener(downInfo.getListener())
+                    .setService(downInfo.getService());
         }
 
 
         @Override
         public void onPuase() {
-            Log.e("@@","onPause下载暂停");
+            Log.e("@@","listsner onPause下载暂停:"+downInfo.downState());
             super.onPuase();
             mBtHandle.setText("开始");
-
+            
+            downInfo = DownInfo.create(downInfo)
+                    .downState(DownInfo.DOWN_PAUSE)
+                    .build()
+                    .setListener(downInfo.getListener())
+                    .setService(downInfo.getService());
         }
 
         @Override
         public void onStop() {
-            Log.e("@@","onPause下载停止");
+            Log.e("@@","listsner onPause下载停止");
             super.onStop();
             mBtHandle.setText("开始");
+
+
+            downInfo = DownInfo.create(downInfo)
+                    .downState(DownInfo.DOWN_STOP)
+                    .build()
+                    .setListener(downInfo.getListener())
+                    .setService(downInfo.getService());
 
         }
 
         @Override
         public void updateProgress(long readLength, long countLength,int percent) {
-            Log.e("@@","onProgress下载中");
+            //Log.e("@@","onProgress下载中");
 
             mBtHandle.setText("暂停");
 
@@ -181,17 +209,20 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                 case DownInfo.DOWN_ING:
                 case DownInfo.DOWN_START:
                     //需要暂停
+                    Log.e("@@","点击了暂停");
                     DownManager.getInstance().pauseDown(downInfo);
                     break;
                 case DownInfo.DOWN_STOP:
                 case DownInfo.DOWN_PAUSE:
                 case DownInfo.DOWN_ERROR:
                     //需要开始
+                    Log.e("@@","点击了 开始下载");
                     DownManager.getInstance().startDown(downInfo);
                     break;
                 case DownInfo.DOWN_FINISH:
                     //需要打开
-                    
+                    Log.e("@@","点击了 完成");
+
                     break;
                  
             }

@@ -28,6 +28,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
     private DownInfo downInfo;
 
  
+    private int prePercent = 0;  //上一次的进度，防止频繁更新View
 
     public DownSubscriber(DownInfo downInfo) {
         setDownInfo(downInfo);
@@ -76,6 +77,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
         //AutoValue标注的bean不能setter，需要重新new一个
         downInfo = DownInfo.create(downInfo).downState(DownInfo.DOWN_START).build();
+        
         //更新数据库
         DatabaseUtil.getInstance().updateState(DownInfo.DOWN_START, downInfo.downUrl());
 
@@ -174,15 +176,28 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
                     .map(new Func1<Long, Integer>() {
                         @Override
                         public Integer call(Long aLong) {
+                            
+                            
                             //下载百分比
-                            return (int)(down / total * 100);
+                            return (int)(100 * down / total);
                         }
                     })
-                    .distinct()  //过滤重复的进度，减少压力
+                    .filter(new Func1<Integer, Boolean>() {
+                        @Override
+                        public Boolean call(Integer integer) {
+                            
+                            //进度没增加就拦截
+                            return prePercent < integer;
+                        }
+                    })
                     .subscribe(new Action1<Integer>() {
                         @Override
                         public void call(Integer percent) {
-                         
+
+                            prePercent = percent;
+                            
+                            Log.e("@@","进度:"+percent);
+                            
                             listener.get().updateProgress(down, total,percent);
 
                         }
