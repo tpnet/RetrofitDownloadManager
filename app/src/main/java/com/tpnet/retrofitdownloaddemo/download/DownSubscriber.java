@@ -5,6 +5,7 @@ import android.util.Log;
 import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.download.listener.IDownloadProgressListener;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
+import com.tpnet.retrofitdownloaddemo.utils.ToastUtil;
 
 import java.lang.ref.SoftReference;
 
@@ -19,7 +20,7 @@ import rx.functions.Func1;
  * Created by litp on 2017/4/10.
  */
 
-public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgressListener{
+public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgressListener {
 
 
     //软件引用结果回调，内存不足回收
@@ -27,7 +28,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
     private DownInfo downInfo;
 
- 
+
     private int prePercent = 0;  //上一次的进度，防止频繁更新View
 
     public DownSubscriber(DownInfo downInfo) {
@@ -37,24 +38,24 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
     //到了下载的列表界面就设置监听器
     public void setListener(IOnDownloadListener listener) {
-        downInfo.listener = listener;
+        downInfo.setListener(listener);
         this.listener = new SoftReference<IOnDownloadListener>(downInfo.getListener());
     }
 
-    
-    public IOnDownloadListener getListener(){
+
+    public IOnDownloadListener getListener() {
         return listener != null ? listener.get() : null;
     }
 
     public void setDownInfo(DownInfo data) {
 
         this.downInfo = data;
-        
+
         if (downInfo.getListener() != null) {
             this.listener = new SoftReference<IOnDownloadListener>(downInfo.getListener());
         }
 
-        
+
     }
 
     public DownInfo getDownInfo() {
@@ -74,12 +75,19 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         }
 
         Log.e("@@", "Subscriber onStart开始下载");
+        ToastUtil.show("开始下载");
 
         //AutoValue标注的bean不能setter，需要重新new一个
-        downInfo = DownInfo.create(downInfo).downState(DownInfo.DOWN_START).build();
-        
+        downInfo = DownInfo.create(downInfo)
+                .downState(DownInfo.DOWN_START)
+                .build()
+                .setListener(downInfo.getListener())
+                .setService(downInfo.getService());
+
+        Log.e("@@", "开始更新状态为开始");
         //更新数据库
-        DatabaseUtil.getInstance().updateState(DownInfo.DOWN_START, downInfo.downUrl());
+        DatabaseUtil.getInstance()
+                .updateState(DownInfo.DOWN_START, downInfo.downUrl());
 
     }
 
@@ -96,13 +104,6 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
         Log.e("@@", "onCompleted完成下载");
 
-        DownManager.getInstance().remove(downInfo);
-
-        //AutoValue标注的bean不能setter，需要重新new一个
-        downInfo = DownInfo.create(downInfo).downState(DownInfo.DOWN_FINISH).build();
-
-        //更新状态
-        DatabaseUtil.getInstance().updateState(DownInfo.DOWN_FINISH, downInfo.downUrl());
 
     }
 
@@ -114,13 +115,18 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
     @Override
     public void onError(Throwable e) {
         Log.e("@@", "onErro下载失败: " + e.toString());
-        
-        DownManager.getInstance().errorDown(downInfo,e);
+        ToastUtil.show("下载错误");
+
+        downInfo = DownInfo.create(downInfo)
+                .downState(DownInfo.DOWN_ERROR)
+                .build()
+                .setListener(downInfo.getListener())
+                .setService(downInfo.getService());
+
+        DownManager.getInstance().errorDown(downInfo, e);
 
     }
 
-    
-    
 
     /**
      * @param t
@@ -128,21 +134,37 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
     @Override
     public void onNext(T t) {
         Log.e("@@", "onNext下载完毕");
+        ToastUtil.show("下载完毕");
+
         if (listener != null && listener.get() != null) {
             listener.get().onNext(t);
         }
+
+        //AutoValue标注的bean不能setter，需要重新new一个
+        downInfo = DownInfo.create(downInfo)
+                .downState(DownInfo.DOWN_FINISH)
+                .build()
+                .setListener(downInfo.getListener())
+                .setService(downInfo.getService());
+
+        //更新状态
+        DatabaseUtil.getInstance()
+                .updateState(DownInfo.DOWN_FINISH, downInfo.downUrl());
+
+
+        DownManager.getInstance().remove(downInfo);
     }
 
 
     //下载进度回调
     @Override
     public void update(final long down, final long total, boolean finish) {
-        
+
         //Log.e("@@","下载进度: downBytes="+down+" responseBody.contentLength()="+total);
-        
+
         long downLength = down;
-        
-        
+
+
         //设置当前下载状态
         DownInfo.Builder builder = DownInfo.create(downInfo);
         if (downInfo.totalLength() > total) {
@@ -159,13 +181,12 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         //更新数据库
         DatabaseUtil.getInstance()
                 .updateDownLength(down, downInfo.downUrl());
-        
+
         //回调到view
         if (listener != null && listener.get() != null) {
 
             //接受进度消息，造成UI阻塞，如果不需要显示进度可去掉实现逻辑，减少压力
             Observable.just(down)
-                    .observeOn(AndroidSchedulers.mainThread())
                     .filter(new Func1<Long, Boolean>() {
                         @Override
                         public Boolean call(Long aLong) {
@@ -176,29 +197,30 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
                     .map(new Func1<Long, Integer>() {
                         @Override
                         public Integer call(Long aLong) {
-                            
-                            
+
+
                             //下载百分比
-                            return (int)(100 * down / total);
+                            return (int) (100 * down / total);
                         }
                     })
                     .filter(new Func1<Integer, Boolean>() {
                         @Override
                         public Boolean call(Integer integer) {
-                            
+
                             //进度没增加就拦截
                             return prePercent < integer;
                         }
                     })
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Action1<Integer>() {
                         @Override
                         public void call(Integer percent) {
 
                             prePercent = percent;
-                            
-                            Log.e("@@","进度:"+percent);
-                            
-                            listener.get().updateProgress(down, total,percent);
+
+                            Log.e("@@", "进度:" + percent);
+
+                            listener.get().updateProgress(down, total, percent);
 
                         }
                     });
@@ -208,14 +230,15 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
     @Override
     public void updateTotalLength(long totalLength) {
-        Log.e("@@","文件长度:"+totalLength);
-        DatabaseUtil.getInstance().updateTotalLength(totalLength,downInfo.downUrl());
+        Log.e("@@", "文件长度:" + totalLength);
+        DatabaseUtil.getInstance().updateTotalLength(totalLength, downInfo.downUrl());
 
     }
 
     //更新下载中状态
     @Override
     public void updateDowning() {
-        DatabaseUtil.getInstance().updateState(DownInfo.DOWN_ING, downInfo.downUrl());
+        DatabaseUtil.getInstance()
+                .updateState(DownInfo.DOWN_ING, downInfo.downUrl());
     }
 }

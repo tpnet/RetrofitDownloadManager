@@ -44,7 +44,7 @@ public class FileUtil {
         MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE,
                 info.downLength(), allLength - info.downLength());
 
-        byte[] buffer = new byte[1024 * 8];  //1k
+        byte[] buffer = new byte[1024 * 8];  //8k
         int len;
         int record = 0;
         while ((len = responseBody.byteStream().read(buffer)) != -1) {
@@ -148,6 +148,16 @@ public class FileUtil {
         }
         BigDecimal result4 = new BigDecimal(teraBytes);
         return result4.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "TB";
+    }
+    
+    
+    public static Boolean  delFile(String filePath){
+        File file  = new File(filePath);
+        if(file.exists()){
+            //如果是目录
+            return file.delete();
+        }
+        return false;
     }
     
     

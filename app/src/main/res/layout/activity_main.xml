@@ -18,7 +18,7 @@
             android:id="@+id/et_link_one"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="http://shouhuchina.com/app/download/shouhu_v2.2.6.apk"
+            android:text="http://192.168.13.30/ScreenToGif2.3.1.exe"
             />
 
         <Button
@@ -33,7 +33,7 @@
             android:id="@+id/et_link_two"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="http://192.168.8.122/app/download/shouhu_v2.2.5.apk"
+            android:text="http://192.168.13.30/baiduyun单文件破解版.exe"
             android:layout_marginTop="20dp"/>
 
         <Button

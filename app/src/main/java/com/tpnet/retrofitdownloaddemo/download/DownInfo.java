@@ -29,7 +29,7 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     
     private DownService service;
     
-    public IOnDownloadListener<DownInfo> listener;
+    private IOnDownloadListener<DownInfo> listener;
 
 
     public DownService getService() {
@@ -46,6 +46,12 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     }
     
     public DownInfo setListener(IOnDownloadListener<DownInfo> listener) {
+        this.listener = listener;
+        return this;
+    }
+    
+    
+    public DownInfo addListener(IOnDownloadListener<DownInfo> listener){
         this.listener = listener;
         //设置监听器到DownSubscriber
         DownManager.getInstance().addListener(this.downUrl(),listener);
@@ -66,7 +72,7 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     public static final RowMapper<DownInfo> LIST_ROW_MAPPER = FACTORY.selectAllMapper();
     
     
-    public static final RowMapper<Long> LIST_EXIST_MAPPER = FACTORY.selectDowninfoExistMapper();
+    public static final RowMapper<String> LIST_EXIST_MAPPER = FACTORY.selectDowninfoSavePathMapper();
     
     
     

@@ -9,9 +9,8 @@
         android:id="@+id/bt_handle"
         android:layout_width="60dp"
         android:layout_height="40dp"
-        android:text="停止"
         android:layout_alignParentRight="true"
-
+        android:layout_centerVertical="true"
         />
     
     
@@ -19,7 +18,6 @@
         android:id="@+id/tv_name"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="名称"
         android:gravity="center_vertical"
         android:maxLines="1"
         android:textSize="18sp"
@@ -30,12 +28,11 @@
 
     <TextView
         android:id="@+id/tv_down_length"
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="123MB/2GB"
-        android:gravity="right"
+        android:gravity="left"
         android:layout_below="@id/tv_name"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
         /> 
     
     
@@ -43,8 +40,7 @@
         android:id="@+id/prb_down"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_name"
-        android:layout_toLeftOf="@id/tv_down_length"
+        android:layout_below="@id/tv_down_length"
         android:secondaryProgress="100"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         />

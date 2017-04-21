@@ -41,8 +41,8 @@ selectDownByState:
 SELECT * FROM downinfo WHERE downState = ?;
 
 -- 查询是否已经在下载列表中
-selectDowninfoExist:
-SELECT COUNT(*) FROM downinfo WHERE downUrl = ?;
+selectDowninfoSavePath:
+SELECT savePath FROM downinfo WHERE downUrl = ? LIMIT 1;
 
 
 -- 插入下载任务,如果存在则不插入

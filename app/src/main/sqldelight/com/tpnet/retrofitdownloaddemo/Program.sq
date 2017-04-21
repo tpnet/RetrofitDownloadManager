@@ -14,7 +14,7 @@ CREATE TABLE program (
         
 -- 联合查询，根据program表中的url来查询这里的记录
 selectDownName:
-SELECT program.name FROM program WHERE downLink = ?;
+SELECT program.name FROM program WHERE downLink = ? LIMIT 1;
 
 
 -- 插入
