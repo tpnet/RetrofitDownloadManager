@@ -14,9 +14,16 @@ public interface IDownloadProgressListener {
      * @param finish 是否下载完成
      */
     void update(long down,long total,boolean finish);
-    
+
+    /**
+     * 更新总长度
+     * @param totalLength 文件总长度
+     */
     void updateTotalLength(long totalLength);
-    
-    
+
+
+    /**
+     * 更新下载状态
+     */
     void updateDowning();
 }

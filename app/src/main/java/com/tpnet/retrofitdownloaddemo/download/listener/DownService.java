@@ -20,7 +20,7 @@ public interface DownService {
      * @param url 下载的链接
      * @return 返回Rxjava处理
      */
-    @Streaming  //大文件需要加入这个判断，防止下载过程中写入到内存中。不加的话，大文件报IOException
+    @Streaming  //大文件需要加这个注解，其实是不让写入到内存中。不加的话，大文件报IOException
     @GET         
     Observable<ResponseBody> download(@Header("Range") String range, @Url String url);
     

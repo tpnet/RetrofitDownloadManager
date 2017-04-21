@@ -33,8 +33,7 @@ public abstract class IOnDownloadListener<T> {
     public abstract void updateProgress(long downLength, long totalLength,int percent);
 
     /**
-     * 失败或者错误方法
-     * 主动调用，更加灵活
+     * 失败或者错误
      * @param e 异常信息
      */
     public  void onError(Throwable e){

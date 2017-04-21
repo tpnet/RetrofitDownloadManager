@@ -42,22 +42,7 @@
             android:layout_height="wrap_content"
             android:text="添加到下载列表"
             />
-
-
-        <EditText
-            android:id="@+id/et_link_three"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="http://shouhuchina.com/app/download/shouhu.apk"
-            android:layout_marginTop="20dp"/>
-
-        <Button
-            android:id="@+id/btn_add_three"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="添加到下载列表"
-            />
-
+ 
 
         <Button
             android:id="@+id/btn_list"

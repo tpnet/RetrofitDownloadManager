@@ -3,7 +3,6 @@ package com.tpnet.retrofitdownloaddemo.download;
 import android.util.Log;
 
 import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
-import com.tpnet.retrofitdownloaddemo.download.exception.RetryWhenNetworkException;
 import com.tpnet.retrofitdownloaddemo.download.listener.DownService;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.utils.Constant;
@@ -134,7 +133,6 @@ public class DownManager {
                 /*指定线程*/
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
-                .retryWhen(new RetryWhenNetworkException())   //失败重试
                 .map(new Func1<ResponseBody, DownInfo>() {    //写入文件
                     @Override
                     public DownInfo call(ResponseBody responseBody) {

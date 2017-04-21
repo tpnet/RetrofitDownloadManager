@@ -8,6 +8,7 @@ import com.tpnet.retrofitdownloaddemo.Program;
 import com.tpnet.retrofitdownloaddemo.download.DownInfo;
 
 /**
+ * 
  * Created by litp on 2017/4/12.
  */
 
@@ -17,10 +18,6 @@ public class DataBaseHelper extends SQLiteOpenHelper{
     public DataBaseHelper(Context context,int v) {
 
         this(context, "video.db", null , v);
-
-
-
-
     }
 
     public DataBaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -32,7 +29,7 @@ public class DataBaseHelper extends SQLiteOpenHelper{
         super.onOpen(db);
         
         //开启外键支持
-        db.execSQL("PRAGMA foreign_keys=ON");
+        //db.execSQL("PRAGMA foreign_keys=ON");
     }
 
     //创建数据库的时候回调

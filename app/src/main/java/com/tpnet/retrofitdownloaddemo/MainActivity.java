@@ -37,8 +37,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
     private Button mBtnAddOne;
     private EditText mEtLinkTwo;
     private Button mBtnAddTwo;
-    private EditText mEtLinkThree;
-    private Button mBtnAddThree;
+ 
     private Button mBtnList;
 
     @Override
@@ -51,13 +50,10 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
         mBtnAddOne = (Button) findViewById(R.id.btn_add_one);
         mEtLinkTwo = (EditText) findViewById(R.id.et_link_two);
         mBtnAddTwo = (Button) findViewById(R.id.btn_add_two);
-        mEtLinkThree = (EditText) findViewById(R.id.et_link_three);
-        mBtnAddThree = (Button) findViewById(R.id.btn_add_three);
         mBtnList = (Button) findViewById(R.id.btn_list);
 
         mBtnAddOne.setOnClickListener(this);
         mBtnAddTwo.setOnClickListener(this);
-        mBtnAddThree.setOnClickListener(this);
         mBtnList.setOnClickListener(this);
         
         
@@ -78,12 +74,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
 
             down(mEtLinkTwo.getText().toString(), "baiduyun单文件破解版.exe");
 
-        } else if (v == mBtnAddThree) {
-
-            down(mEtLinkThree.getText().toString(), "守护3");
-
-        }
-        if (v == mBtnList) {
+        }else if (v == mBtnList) {
 
             startActivity(new Intent(this, DownListActivity.class));
         }
@@ -198,13 +189,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
         }
     }
     
-    
-    
-    
-    
-    
-    
-    
+  
     
     
     //开始下载
