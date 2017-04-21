@@ -3,7 +3,7 @@ package com.tpnet.retrofitdownloaddemo.download;
 import android.util.Log;
 
 import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
-import com.tpnet.retrofitdownloaddemo.download.listener.DownService;
+import com.tpnet.retrofitdownloaddemo.download.listener.DownInterface;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.utils.Constant;
 import com.tpnet.retrofitdownloaddemo.utils.FileUtil;
@@ -84,18 +84,19 @@ public class DownManager {
         //添加回调处理类
         DownSubscriber<DownInfo> subscriber;
 
-        if (downSubs.get(info.downUrl()) != null) {
+        if (downSubs.get(info.downUrl()) != null) {  //切换界面下载 情况
 
-            //添加监听器
+            //添加回调View监听器
             if (info.getListener() != null) {
                 downInfos.get(info.downUrl()).setListener(info.getListener());
                 downSubs.get(info.downUrl()).setListener(info.getListener());
             }
 
+          /*  
             if (info.getService() != null) {
                 downInfos.get(info.downUrl()).setService(info.getService());
 
-            }
+            }*/
 
             if (info.downState() == DownInfo.DOWN_ING) {
                 return;
@@ -103,13 +104,21 @@ public class DownManager {
 
             subscriber = downSubs.get(info.downUrl());
 
-        } else {
+        } else {  //暂停错误 重新下载
+            
             subscriber = new DownSubscriber<DownInfo>(info);
             downSubs.put(info.downUrl(), subscriber);
 
         }
 
-        DownService service;
+        //添加回调View监听器
+        if (info.getListener() != null) {
+            downInfos.get(info.downUrl()).setListener(info.getListener());
+            downSubs.get(info.downUrl()).setListener(info.getListener());
+        }
+        
+
+        DownInterface service;
 
         if (downInfos.get(info.downUrl()) != null) {
             //获取service
@@ -130,7 +139,7 @@ public class DownManager {
 
         // 断点下载
         service.download("bytes=" + downInfos.get(info.downUrl()).downLength() + "-", downInfos.get(info.downUrl()).downUrl())
-                /*指定线程*/
+                //在线程中下载
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .map(new Func1<ResponseBody, DownInfo>() {    //写入文件
@@ -158,7 +167,7 @@ public class DownManager {
     }
 
 
-    private DownService createService(Interceptor interceptor) {
+    private DownInterface createService(Interceptor interceptor) {
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(Constant.TIME_OUT, TimeUnit.SECONDS)
@@ -170,9 +179,9 @@ public class DownManager {
         return new Retrofit.Builder()
                 .client(client)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .baseUrl("https://www.baidu.com/")
+                .baseUrl("https://www.baidu.com/")  //下载文件，基地址可以不用正确，下载文件的url是全路径即可
                 .build()
-                .create(DownService.class);
+                .create(DownInterface.class);
     }
 
 
@@ -230,6 +239,8 @@ public class DownManager {
         if (downSubs.get(info.downUrl()) != null) {
             //解除订阅就不会下载了
             downSubs.get(info.downUrl()).unsubscribe();
+            //防止下载速度太快导致继续下载回调
+            downSubs.get(info.downUrl()).setListener(null);
             downSubs.remove(info.downUrl());
         }
 
@@ -276,5 +287,8 @@ public class DownManager {
         downInfos.remove(info.downUrl());
     }
 
-
+    
+    
+    
+    
 }

@@ -29,7 +29,7 @@ public abstract class Program implements Parcelable,ProgramModel{
 
     public static Program create(String downLink, String name) {
         return builder()
-                ._id(0)
+                ._id(0)  //id自动增长的
                 .downLink(downLink)
                 .name(name)
                 .build();

@@ -82,10 +82,8 @@ public class DownloadResponseBody extends ResponseBody{
                 
                 //添加
                 downBytes += bytesRead != -1 ? bytesRead : 0;
-
                 
-             
-                //回调接口
+                //回调接口到Subscriber
                 if (null != progressListener) {
                     progressListener.update(downBytes, responseBody.contentLength(), bytesRead == -1 && downBytes == responseBody.contentLength());
                 }

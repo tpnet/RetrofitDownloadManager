@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import com.google.auto.value.AutoValue;
 import com.squareup.sqldelight.RowMapper;
 import com.tpnet.retrofitdownloaddemo.DownInfoModel;
-import com.tpnet.retrofitdownloaddemo.download.listener.DownService;
+import com.tpnet.retrofitdownloaddemo.download.listener.DownInterface;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 
 /**
@@ -17,7 +17,7 @@ import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 @AutoValue
 public abstract class DownInfo implements Parcelable,DownInfoModel{
     
-    //下面6中下载状态,数字需要改变的话，Sql语句里面也需要改变
+    //下面6种下载状态
     public final static int DOWN_START = 0x0;    //开始
     public final static int DOWN_PAUSE = 0x1;    //暂停
     public final static int DOWN_STOP = 0x2;     //停止
@@ -27,16 +27,16 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     
     
     
-    private DownService service;
+    private DownInterface service;  //Retrofit下载的Service
     
-    private IOnDownloadListener<DownInfo> listener;
+    private IOnDownloadListener<DownInfo> listener;   //回调view的监听器
 
 
-    public DownService getService() {
+    public DownInterface getService() {
         return service;
     }
 
-    public DownInfo setService(DownService service) {
+    public DownInfo setService(DownInterface service) {
         this.service = service;
         return this;
     }
@@ -79,7 +79,7 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     
     public static DownInfo create(String savePath, long totalLength, long downLength, int downState, String downUrl, long startTime, long finishTime, long pauseTime, long allTime) {
         return builder()
-                ._id(0)
+                ._id(0)  //id自动增长的
                 .savePath(savePath)
                 .totalLength(totalLength)
                 .downLength(downLength)
@@ -93,7 +93,7 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
 
     public static Builder create(DownInfo downInfo) {
         return builder()
-                ._id(downInfo._id())
+                ._id(downInfo._id()) 
                 .savePath(downInfo.savePath())
                 .totalLength(downInfo.totalLength())
                 .downLength(downInfo.downLength())

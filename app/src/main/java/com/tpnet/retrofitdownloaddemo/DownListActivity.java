@@ -20,11 +20,8 @@ public class DownListActivity extends RxAppCompatActivity {
     
     private RecyclerView mRcvList;
     
-    ListAdapter adapter;
-    
-    
-    DatabaseUtil dbUtil;  //下载工具
-
+    private ListAdapter adapter;
+ 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

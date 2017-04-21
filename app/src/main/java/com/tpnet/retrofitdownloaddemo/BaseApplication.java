@@ -15,10 +15,6 @@ public class BaseApplication extends Application {
 
     private static BaseApplication instance;
 
-    public static BaseApplication getInstance() {
-        return instance;
-    }
-
  
 
     public static Context getContext() {

@@ -12,7 +12,7 @@ import rx.Observable;
  * Created by litp on 2017/4/10.
  */
 
-public interface DownService {
+public interface DownInterface {
 
     /**
      * 下载文件的Retrofit接口

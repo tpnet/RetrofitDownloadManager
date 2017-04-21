@@ -7,7 +7,7 @@ import com.tpnet.retrofitdownloaddemo.download.listener.IDownloadProgressListene
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.utils.ToastUtil;
 
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -23,14 +23,15 @@ import rx.functions.Func1;
 public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgressListener {
 
 
-    //软件引用结果回调，内存不足回收
-    private SoftReference<IOnDownloadListener> listener;
+    //弱引用结果回调，挂了就回收
+    private WeakReference<IOnDownloadListener> listener;
 
     private DownInfo downInfo;
 
 
     private int prePercent = 0;  //上一次的进度，防止频繁更新View
 
+    
     public DownSubscriber(DownInfo downInfo) {
         setDownInfo(downInfo);
     }
@@ -39,7 +40,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
     //到了下载的列表界面就设置监听器
     public void setListener(IOnDownloadListener listener) {
         downInfo.setListener(listener);
-        this.listener = new SoftReference<IOnDownloadListener>(downInfo.getListener());
+        this.listener = new WeakReference<IOnDownloadListener>(listener);
     }
 
 
@@ -52,7 +53,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         this.downInfo = data;
 
         if (downInfo.getListener() != null) {
-            this.listener = new SoftReference<IOnDownloadListener>(downInfo.getListener());
+            this.listener = new WeakReference<IOnDownloadListener>(downInfo.getListener());
         }
 
 
@@ -197,8 +198,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
                     .map(new Func1<Long, Integer>() {
                         @Override
                         public Integer call(Long aLong) {
-
-
+                            
                             //下载百分比
                             return (int) (100 * down / total);
                         }
@@ -241,4 +241,6 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         DatabaseUtil.getInstance()
                 .updateState(DownInfo.DOWN_ING, downInfo.downUrl());
     }
+    
+    
 }

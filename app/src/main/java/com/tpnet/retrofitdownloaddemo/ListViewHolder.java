@@ -17,6 +17,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
 /**
+ * 
  * Created by litp on 2017/4/18.
  */
 
@@ -133,7 +134,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         @Override
         public void onComplete() {
             Log.e("@@", "listsner onComplete完成");
-            mBtHandle.setText("完成");
+            //mBtHandle.setText("完成");
 
            
 
@@ -182,9 +183,9 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         }
 
         @Override
-        public void updateProgress(long readLength, long countLength, int percent) {
+        public void updateProgress(long readLength, long totalLength, int percent) {
             
-            Log.e("@@","listsner onProgress下载中:"+percent);
+            Log.e("@@","listsner onProgress下载中:"+percent +" "+readLength+" "+totalLength);
 
             mBtHandle.setText("暂停");
 
@@ -195,7 +196,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
             //设置文本
             mTvDownLength.setText(
                     String.format("%s/%s"
-                            , FileUtil.getFormatSize(readLength), FileUtil.getFormatSize(countLength)));
+                            , FileUtil.getFormatSize(readLength), FileUtil.getFormatSize(totalLength)));
 
         }
     };
@@ -217,6 +218,8 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                 case DownInfo.DOWN_ERROR:
                     //需要开始
                     Log.e("@@", "点击了 开始下载");
+                    //需要设置监听器，
+                    //downInfo.setListener(listener);
                     DownManager.getInstance().startDown(downInfo);
                     break;
                 case DownInfo.DOWN_FINISH:

@@ -157,7 +157,7 @@ public class FileUtil {
             //如果是目录
             return file.delete();
         }
-        return false;
+        return true;
     }
     
     

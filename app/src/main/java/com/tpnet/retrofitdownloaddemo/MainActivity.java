@@ -153,6 +153,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
                                         progressDialog.dismiss();
                                     }
                                 })
+                                .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Action1<Boolean>() {
                                     @Override
                                     public void call(Boolean aBoolean) {
@@ -165,12 +166,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
                                         }
                                     }
                                 });
-                        
-                        
-                        
-
-                        
-                        
+                  
                         
                     }
                 })
