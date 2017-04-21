@@ -75,15 +75,12 @@ public class DatabaseUtil {
         SqlDelightStatement sqlDelightStatement = Program.FACTORY.selectDownName(downUrl);
 
         return db.createQuery(Program.TABLE_NAME, sqlDelightStatement.statement, sqlDelightStatement.args)
-                .map(new Func1<SqlBrite.Query, String>() {
+                .mapToOneOrDefault(new Func1<Cursor, String>() {
                     @Override
-                    public String call(SqlBrite.Query query) {
-
-                        Cursor cur = query.run();
-                        cur.moveToFirst();
-                        return Program.ROW_NAMW_MAPPER.map(cur);
+                    public String call(Cursor cursor) {
+                        return Program.ROW_NAMW_MAPPER.map(cursor);
                     }
-                });
+                },"获取失败");
 
     }
 
@@ -194,22 +191,20 @@ public class DatabaseUtil {
     public Observable<String> getDownSavePath(String downUrl) {
         SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selectDowninfoSavePath(downUrl);
         return db.createQuery(DownInfo.TABLE_NAME, sqlDelightStatement.statement, sqlDelightStatement.args)
-                .map(new Func1<SqlBrite.Query, String>() {
+                
+                .mapToOneOrDefault(new Func1<Cursor, String>() {
                     @Override
-                    public String call(SqlBrite.Query query) {
-                        Cursor cursor = query.run();
-                        cursor.moveToFirst();
-
+                    public String call(Cursor cursor) {
                         return LIST_EXIST_MAPPER.map(cursor);
                     }
-                })
-                .onErrorResumeNext(new Func1<Throwable, Observable<? extends String>>() {
+                },"")
+                //失败返回空字符串
+                /*.onErrorResumeNext(new Func1<Throwable, Observable<? extends String>>() {
                     @Override
                     public Observable<? extends String> call(Throwable throwable) {
-                        //错误发射空
                         return Observable.just("");
                     }
-                });
+                })*/;
 
     }
 

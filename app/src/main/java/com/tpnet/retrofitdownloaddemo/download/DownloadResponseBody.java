@@ -38,7 +38,7 @@ public class DownloadResponseBody extends ResponseBody{
      
         this.progressListener = progressListener;
         
-        //更新数据长度
+        //更新数据长度，返回的总长度是减去断点续传的长度
         progressListener.updateTotalLength(responseBody.contentLength());
         progressListener.updateDowning();
         

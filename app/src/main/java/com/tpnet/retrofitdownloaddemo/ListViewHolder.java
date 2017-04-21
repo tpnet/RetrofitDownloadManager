@@ -1,5 +1,7 @@
 package com.tpnet.retrofitdownloaddemo;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +14,8 @@ import com.tpnet.retrofitdownloaddemo.download.DownManager;
 import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.utils.FileUtil;
+
+import java.io.File;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -50,11 +54,13 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
         this.downInfo = data;
 
-        //添加监听器
-        downInfo.addListener(listener);
+        //添加view回调监听器
+        DownManager.getInstance().addListener(data.downUrl(),listener);
+
 
         switch (downInfo.downState()) {
             case DownInfo.DOWN_ING:
+            case DownInfo.DOWN_START:
                 mBtHandle.setText("暂停");
                 DownManager.getInstance().startDown(downInfo);
                 break;
@@ -95,10 +101,10 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         if (downInfo.totalLength() == 0) {
             mPrbDown.setProgress(100);
         } else {
-            mPrbDown.setProgress((int) (downInfo.downLength() * 100 / downInfo.totalLength() ));
+            mPrbDown.setProgress((int) (downInfo.downLength() * 100 / downInfo.totalLength()));
         }
 
-        
+
     }
 
 
@@ -111,12 +117,9 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
             downInfo = DownInfo.create(downInfo)
                     .downState(DownInfo.DOWN_FINISH)
-                    .build()
-                    .setListener(downInfo.getListener())
-                    .setService(downInfo.getService());
-            
-           
-            
+                    .build();
+
+
         }
 
         @Override
@@ -125,9 +128,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
             mBtHandle.setText("暂停");
             downInfo = DownInfo.create(downInfo)
                     .downState(DownInfo.DOWN_START)
-                    .build()
-                    .setListener(downInfo.getListener())
-                    .setService(downInfo.getService());
+                    .build();
 
         }
 
@@ -136,7 +137,6 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
             Log.e("@@", "listsner onComplete完成");
             //mBtHandle.setText("完成");
 
-           
 
         }
 
@@ -148,9 +148,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
             downInfo = DownInfo.create(downInfo)
                     .downState(DownInfo.DOWN_ERROR)
-                    .build()
-                    .setListener(downInfo.getListener())
-                    .setService(downInfo.getService());
+                    .build();
         }
 
 
@@ -162,9 +160,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
             downInfo = DownInfo.create(downInfo)
                     .downState(DownInfo.DOWN_PAUSE)
-                    .build()
-                    .setListener(downInfo.getListener())
-                    .setService(downInfo.getService());
+                    .build();
         }
 
         @Override
@@ -176,16 +172,14 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
             downInfo = DownInfo.create(downInfo)
                     .downState(DownInfo.DOWN_STOP)
-                    .build()
-                    .setListener(downInfo.getListener())
-                    .setService(downInfo.getService());
+                    .build();
 
         }
 
         @Override
         public void updateProgress(long readLength, long totalLength, int percent) {
-            
-            Log.e("@@","listsner onProgress下载中:"+percent +" "+readLength+" "+totalLength);
+
+            Log.e("@@", "listsner onProgress下载中:" + percent + " " + readLength + " " + totalLength);
 
             mBtHandle.setText("暂停");
 
@@ -204,7 +198,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
     @Override
     public void onClick(View v) {
- 
+
         if (v.getId() == R.id.bt_handle) {
             switch (downInfo.downState()) {
                 case DownInfo.DOWN_ING:
@@ -225,7 +219,14 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                 case DownInfo.DOWN_FINISH:
                     //需要打开
                     Log.e("@@", "点击了 完成");
-
+                    if (FileUtil.getExtensionName(downInfo.savePath()).equals("apk")){
+                        //如果是安装包、
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.fromFile(new File(downInfo.savePath())),
+                                "application/vnd.android.package-archive");
+                        mBtHandle.getContext().startActivity(intent);
+                    }
+                        
                     break;
 
             }

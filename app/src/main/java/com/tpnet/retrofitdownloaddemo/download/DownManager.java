@@ -30,19 +30,16 @@ import rx.schedulers.Schedulers;
 
 public class DownManager {
 
-    // 记录下载数据
-    private Map<String, DownInfo> downInfos;
-
-
+    
     //回调观察者队列,downUrl标识，暂停和错误都会清除对应的观察者
     private Map<String, DownSubscriber<DownInfo>> downSubs;
+    
 
     //单例
     private volatile static DownManager INSTANCE;
 
 
     public DownManager() {
-        downInfos = new HashMap<>();
         downSubs = new HashMap<>();
 
     }
@@ -64,15 +61,6 @@ public class DownManager {
     }
 
 
-    //添加view回调监听器
-    public void addListener(String downUrl, IOnDownloadListener<DownInfo> listener) {
-        if (downSubs.get(downUrl) != null) {
-            Log.e("@@", "添加监听器" + downUrl);
-            downSubs.get(downUrl).setListener(listener);
-            downInfos.get(downUrl).setListener(listener);
-
-        }
-    }
 
 
     public void startDown(final DownInfo info) {
@@ -85,20 +73,10 @@ public class DownManager {
         DownSubscriber<DownInfo> subscriber;
 
         if (downSubs.get(info.downUrl()) != null) {  //切换界面下载 情况
+            
 
-            //添加回调View监听器
-            if (info.getListener() != null) {
-                downInfos.get(info.downUrl()).setListener(info.getListener());
-                downSubs.get(info.downUrl()).setListener(info.getListener());
-            }
-
-          /*  
-            if (info.getService() != null) {
-                downInfos.get(info.downUrl()).setService(info.getService());
-
-            }*/
-
-            if (info.downState() == DownInfo.DOWN_ING) {
+            if (downSubs.get(info.downUrl()).getDownInfo().downState() == DownInfo.DOWN_ING) {
+                
                 return;
             }
 
@@ -111,34 +89,28 @@ public class DownManager {
 
         }
 
-        //添加回调View监听器
-        if (info.getListener() != null) {
-            downInfos.get(info.downUrl()).setListener(info.getListener());
-            downSubs.get(info.downUrl()).setListener(info.getListener());
-        }
-        
+
 
         DownInterface service;
 
-        if (downInfos.get(info.downUrl()) != null) {
+        if (downSubs.get(info.downUrl()).getService()  != null) {
             //获取service
-            service = downInfos.get(info.downUrl()).getService();
+            service = downSubs.get(info.downUrl()).getService();
         } else {
 
             service = createService(new DownloadInterceptor(subscriber));
 
-            info.setService(service);
-
-            downInfos.put(info.downUrl(), info);
+            downSubs.get(info.downUrl()).setService(service);
 
             //插入数据库
-            DatabaseUtil.getInstance().insertDownInfo(info);
+            DatabaseUtil.getInstance().insertDownInfo(downSubs.get(info.downUrl()).getDownInfo());
 
         }
 
-
-        // 断点下载
-        service.download("bytes=" + downInfos.get(info.downUrl()).downLength() + "-", downInfos.get(info.downUrl()).downUrl())
+  
+        Log.e("@@","断点续传长度为："+downSubs.get(info.downUrl()).getDownInfo().downLength());
+        // 断点下载,每次返回的总长度是减去断点续传的长度
+        service.download("bytes=" + downSubs.get(info.downUrl()).getDownInfo().downLength() + "-", downSubs.get(info.downUrl()).getDownInfo().downUrl())
                 //在线程中下载
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
@@ -149,13 +121,13 @@ public class DownManager {
                         Log.e("@@", "数据回调map call保存到文件: contentLength=" + responseBody.contentLength());
 
                         try {
-                            FileUtil.writeFile(responseBody, new File(downInfos.get(info.downUrl()).savePath()), downInfos.get(info.downUrl()));
+                            FileUtil.writeFile(responseBody, new File(downSubs.get(info.downUrl()).getDownInfo().savePath()), downSubs.get(info.downUrl()).getDownInfo());
                         } catch (IOException e) {
                             //throw e;
                             Log.e("@@", "写入文件错误" + e.getMessage());
                         }
 
-                        return downInfos.get(info.downUrl());
+                        return downSubs.get(info.downUrl()).getDownInfo();
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread()) //回调在主线程
@@ -185,6 +157,16 @@ public class DownManager {
     }
 
 
+    //添加view回调监听器
+    public void addListener(String downUrl, IOnDownloadListener<DownInfo> listener) {
+        if (downSubs.get(downUrl) != null) {
+            Log.e("@@", "添加监听器" + downUrl);
+            downSubs.get(downUrl).setListener(listener);
+
+        }
+    }
+
+
     /**
      * 停止下载,进度设置为0，状态未开始
      *
@@ -194,8 +176,8 @@ public class DownManager {
         
         
         if(handleDown(info, DownInfo.DOWN_STOP) > 0){
-            if (downInfos.get(info.downUrl()).getListener() != null) {
-                downInfos.get(info.downUrl()).getListener().onStop();
+            if (downSubs.get(info.downUrl()).getListener() != null) {
+                downSubs.get(info.downUrl()).getListener().onStop();
             }
         }
 
@@ -210,8 +192,8 @@ public class DownManager {
     public void errorDown(final DownInfo info, final Throwable e) {
 
         if(handleDown(info, DownInfo.DOWN_ERROR) > 0){
-            if (downInfos.get(info.downUrl()).getListener() != null) {
-                downInfos.get(info.downUrl()).getListener().onError(e);
+            if (downSubs.get(info.downUrl()).getListener() != null) {
+                downSubs.get(info.downUrl()).getListener().onError(e);
             }
         }
         
@@ -225,8 +207,8 @@ public class DownManager {
     public void pauseDown(DownInfo info) {
 
         if(handleDown(info, DownInfo.DOWN_PAUSE) > 0 ){
-            if (downInfos.get(info.downUrl()).getListener() != null) {
-                downInfos.get(info.downUrl()).getListener().onPuase();
+            if (downSubs.get(info.downUrl()).getListener() != null) {
+                downSubs.get(info.downUrl()).getListener().onPuase();
             }
         }
         
@@ -240,8 +222,10 @@ public class DownManager {
             //解除订阅就不会下载了
             downSubs.get(info.downUrl()).unsubscribe();
             //防止下载速度太快导致继续下载回调
-            downSubs.get(info.downUrl()).setListener(null);
-            downSubs.remove(info.downUrl());
+            //downSubs.get(info.downUrl()).setListener(null);
+            //downSubs.remove(info.downUrl());
+
+            downSubs.get(info.downUrl()).setDownloadState(state);
         }
 
         return DatabaseUtil.getInstance()
@@ -254,12 +238,13 @@ public class DownManager {
      */
     public void stopAllDown() {
 
-        for (String key : downInfos.keySet()) {
-            stopDown(downInfos.get(key));
+        
+        
+        for (String key : downSubs.keySet()) {
+            stopDown(downSubs.get(key).getDownInfo());
         }
 
         downSubs.clear();
-        downInfos.clear();
     }
 
 
@@ -268,12 +253,11 @@ public class DownManager {
      */
     public void pauseAllDown() {
 
-        for (String key : downInfos.keySet()) {
-            pauseDown(downInfos.get(key));
+        for (String key : downSubs.keySet()) {
+            pauseDown(downSubs.get(key).getDownInfo());
         }
 
         downSubs.clear();
-        downInfos.clear();
     }
 
 
@@ -284,11 +268,8 @@ public class DownManager {
      */
     public void remove(DownInfo info) {
         downSubs.remove(info.downUrl());
-        downInfos.remove(info.downUrl());
     }
 
-    
-    
     
     
 }

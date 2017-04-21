@@ -3,6 +3,7 @@ package com.tpnet.retrofitdownloaddemo.download;
 import android.util.Log;
 
 import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
+import com.tpnet.retrofitdownloaddemo.download.listener.DownInterface;
 import com.tpnet.retrofitdownloaddemo.download.listener.IDownloadProgressListener;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.utils.ToastUtil;
@@ -23,10 +24,13 @@ import rx.functions.Func1;
 public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgressListener {
 
 
-    //弱引用结果回调，挂了就回收
-    private WeakReference<IOnDownloadListener> listener;
+    //弱引用结果回调，挂了就回收。  回调view监听器
+    private WeakReference<IOnDownloadListener> listener; 
 
-    private DownInfo downInfo;
+    private DownInfo downInfo;   //下载bean
+    
+    
+    private DownInterface service;     // Retrofit的服务端
 
 
     private int prePercent = 0;  //上一次的进度，防止频繁更新View
@@ -39,7 +43,6 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
     //到了下载的列表界面就设置监听器
     public void setListener(IOnDownloadListener listener) {
-        downInfo.setListener(listener);
         this.listener = new WeakReference<IOnDownloadListener>(listener);
     }
 
@@ -52,17 +55,20 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
 
         this.downInfo = data;
 
-        if (downInfo.getListener() != null) {
-            this.listener = new WeakReference<IOnDownloadListener>(downInfo.getListener());
-        }
-
-
     }
 
     public DownInfo getDownInfo() {
         return downInfo;
     }
 
+
+    public DownInterface getService() {
+        return service;
+    }
+
+    public void setService(DownInterface service) {
+        this.service = service;
+    }
 
     /**
      * 开始下载
@@ -79,11 +85,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         ToastUtil.show("开始下载");
 
         //AutoValue标注的bean不能setter，需要重新new一个
-        downInfo = DownInfo.create(downInfo)
-                .downState(DownInfo.DOWN_START)
-                .build()
-                .setListener(downInfo.getListener())
-                .setService(downInfo.getService());
+        setDownloadState(DownInfo.DOWN_START);
 
         Log.e("@@", "开始更新状态为开始");
         //更新数据库
@@ -118,11 +120,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         Log.e("@@", "onErro下载失败: " + e.toString());
         ToastUtil.show("下载错误");
 
-        downInfo = DownInfo.create(downInfo)
-                .downState(DownInfo.DOWN_ERROR)
-                .build()
-                .setListener(downInfo.getListener())
-                .setService(downInfo.getService());
+        setDownloadState(DownInfo.DOWN_ERROR);
 
         DownManager.getInstance().errorDown(downInfo, e);
 
@@ -142,11 +140,7 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
         }
 
         //AutoValue标注的bean不能setter，需要重新new一个
-        downInfo = DownInfo.create(downInfo)
-                .downState(DownInfo.DOWN_FINISH)
-                .build()
-                .setListener(downInfo.getListener())
-                .setService(downInfo.getService());
+        setDownloadState(DownInfo.DOWN_FINISH);
 
         //更新状态
         DatabaseUtil.getInstance()
@@ -242,5 +236,11 @@ public class DownSubscriber<T> extends Subscriber<T> implements IDownloadProgres
                 .updateState(DownInfo.DOWN_ING, downInfo.downUrl());
     }
     
+    
+    public void setDownloadState(@DownState int state){
+        this.downInfo = DownInfo.create(downInfo)
+                .downState(state)
+                .build();
+    }
     
 }

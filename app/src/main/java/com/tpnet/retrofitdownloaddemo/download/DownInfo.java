@@ -6,8 +6,6 @@ import android.support.annotation.NonNull;
 import com.google.auto.value.AutoValue;
 import com.squareup.sqldelight.RowMapper;
 import com.tpnet.retrofitdownloaddemo.DownInfoModel;
-import com.tpnet.retrofitdownloaddemo.download.listener.DownInterface;
-import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 
 /**
  * 下载的信息
@@ -25,40 +23,8 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     public final static int DOWN_ING = 0x4;         //下载中
     public final static int DOWN_FINISH = 0x5;      //完成
     
-    
-    
-    private DownInterface service;  //Retrofit下载的Service
-    
-    private IOnDownloadListener<DownInfo> listener;   //回调view的监听器
-
-
-    public DownInterface getService() {
-        return service;
-    }
-
-    public DownInfo setService(DownInterface service) {
-        this.service = service;
-        return this;
-    }
-
-    public IOnDownloadListener<DownInfo> getListener() {
-        return listener;
-    }
-    
-    public DownInfo setListener(IOnDownloadListener<DownInfo> listener) {
-        this.listener = listener;
-        return this;
-    }
-    
-    
-    public DownInfo addListener(IOnDownloadListener<DownInfo> listener){
-        this.listener = listener;
-        //设置监听器到DownSubscriber
-        DownManager.getInstance().addListener(this.downUrl(),listener);
-        return this;
-    }
-
-
+ 
+ 
 
     
     public static final Factory<DownInfo> FACTORY = new Factory<>(new DownInfoModel.Creator<DownInfo>() {

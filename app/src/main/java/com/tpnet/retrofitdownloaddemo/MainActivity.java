@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -67,12 +68,12 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
         if (v == mBtnAddOne) {
 
 
-            down(mEtLinkOne.getText().toString(), "ScreenToGif2.3.1.exe");
+            down(mEtLinkOne.getText().toString(), FileUtil.getFileName(mEtLinkOne.getText().toString()));
 
 
         } else if (v == mBtnAddTwo) {
 
-            down(mEtLinkTwo.getText().toString(), "baiduyun单文件破解版.exe");
+            down(mEtLinkTwo.getText().toString(), FileUtil.getFileName(mEtLinkTwo.getText().toString()));
 
         }else if (v == mBtnList) {
 
@@ -93,9 +94,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
 
     }
 
-
-
-
+    
 
     //创建下载
     private void down(final String url, final String name) {
@@ -105,9 +104,10 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
                 .subscribe(new Action1<String>() {
                     @Override
                     public void call(final String savePath) {
+                        Log.e("@@", "路径" + savePath);
                         if (!TextUtils.isEmpty(savePath)) {
-                            
-                            showDialog(savePath,url,name);
+
+                            showDialog(savePath, url, name);
 
                         } else {
 
