@@ -42,7 +42,15 @@ SELECT * FROM downinfo WHERE downState = ?;
 
 -- 查询是否已经在下载列表中
 selectDowninfoSavePath:
-SELECT savePath FROM downinfo WHERE downUrl = ? LIMIT 1;
+SELECT savePath FROM downinfo WHERE downUrl = ?;
+
+
+
+
+-- 查询总长度
+selectTotalLength:
+SELECT totalLength FROM downinfo WHERE downUrl = ?;
+
 
 
 -- 插入下载任务,如果存在则不插入
@@ -69,7 +77,7 @@ updateDownFinishTime:
 update downinfo SET finishTime = ? WHERE downUrl = ?;
 
 -- 更新某条记录的所有信息
-updateDown:
+updateDowninfo:
 update downinfo SET savePath = ?,totalLength = ?,downLength = ?,downState = ?,startTime = ?,finishTime = ? WHERE downUrl = ?;
 
 

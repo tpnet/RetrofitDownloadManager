@@ -10,9 +10,16 @@ import com.tpnet.retrofitdownloaddemo.BaseApplication;
 
 public class ToastUtil  {
     
+    private static Toast toast;
+    
     
     public static void show(String text){
-        Toast.makeText(BaseApplication.getContext(),text,Toast.LENGTH_SHORT).show();
+        if(toast == null ){
+            toast = Toast.makeText(BaseApplication.getContext(),text,Toast.LENGTH_SHORT);
+        }else{
+            toast.setText(text);
+        }
+        toast.show();
     }
     
     

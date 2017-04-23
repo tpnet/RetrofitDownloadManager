@@ -18,10 +18,12 @@ import com.tpnet.retrofitdownloaddemo.download.DownState;
 import java.util.List;
 
 import rx.Observable;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-import static com.tpnet.retrofitdownloaddemo.download.DownInfo.LIST_EXIST_MAPPER;
+import static com.tpnet.retrofitdownloaddemo.download.DownInfo.DOWN_EXIST_MAPPER;
+import static com.tpnet.retrofitdownloaddemo.download.DownInfo.TOTALLENGTH_MAPPER;
 
 /**
  * Created by litp on 2017/4/10.
@@ -139,11 +141,13 @@ public class DatabaseUtil {
      * @param downUrl
      */
     public void updateDownLength(final long downLength, final String downUrl) {
+ 
         Observable.just(downUrl)
                 .observeOn(Schedulers.computation())
                 .map(new Func1<String, Integer>() {
                     @Override
                     public Integer call(String s) {
+                        Log.e("@@","更新下载中长度:"+downLength);
                         DownInfo.UpdateDownLength update = new DownInfoModel.UpdateDownLength(db.getWritableDatabase());
                         update.bind(downLength, s);
                         return update.program.executeUpdateDelete();
@@ -156,11 +160,11 @@ public class DatabaseUtil {
 
     //更新下载状态
     public Integer updateState(@DownState  int state,  String url) {
-
+        
         DownInfo.UpdateDownState updateDownState = new DownInfoModel.UpdateDownState(db.getWritableDatabase());
         updateDownState.bind(state, url);
         int row = updateDownState.program.executeUpdateDelete();
-        Log.e("@@", "更新状态" + state);
+        Log.e("@@", "更新数据库下载状态" + state);
         return row;
 
 
@@ -168,25 +172,52 @@ public class DatabaseUtil {
 
 
     /**
-     * 更新总长度
+     * 更新总长度,如果本来的总长度大于新的，就不更新了
      *
      * @param downUrl
      */
-    public void updateTotalLength(final long totalLength, String downUrl) {
-        Observable.just(downUrl)
-                .observeOn(Schedulers.computation())
-                .map(new Func1<String, Integer>() {
+    public void updateTotalLength(final long totalLength, final String downUrl) {
+
+        SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selectTotalLength(downUrl);
+        db.createQuery(DownInfo.TABLE_NAME,sqlDelightStatement.statement,sqlDelightStatement.args)
+                .mapToOneOrDefault(new Func1<Cursor, Long>() {
                     @Override
-                    public Integer call(String s) {
-                        DownInfo.UpdateTotalLength update = new DownInfoModel.UpdateTotalLength(db.getWritableDatabase());
-                        update.bind(totalLength, s);
-                        return update.program.executeUpdateDelete();
+                    public Long call(Cursor cursor) {
+                        return TOTALLENGTH_MAPPER.map(cursor);
+                    }
+                },0L)
+                .observeOn(Schedulers.computation())
+                .filter(new Func1<Long, Boolean>() {
+                    @Override
+                    public Boolean call(Long aLong) {
+                        
+                        return aLong < totalLength;
                     }
                 })
-                .subscribe();
+                .subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+                        DownInfo.UpdateTotalLength update = new DownInfoModel.UpdateTotalLength(db.getWritableDatabase());
+                        update.bind(totalLength, downUrl);
+                        update.program.executeUpdateDelete();
+                    }
+                });
+        
+        
 
     }
 
+
+    /**
+     * 更新下载信息
+     * @param downInfo
+     * @return
+     */
+    public Integer updateDowninfo(DownInfo downInfo){
+        DownInfoModel.UpdateDowninfo updateDowninfo = new DownInfoModel.UpdateDowninfo(db.getWritableDatabase());
+        updateDowninfo.bind(downInfo.savePath(),downInfo.totalLength(),downInfo.downLength(),downInfo.downState(),downInfo.startTime(),downInfo.finishTime(),downInfo.downUrl());
+        return updateDowninfo.program.executeUpdateDelete();
+    }
 
     public Observable<String> getDownSavePath(String downUrl) {
         SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selectDowninfoSavePath(downUrl);
@@ -195,16 +226,9 @@ public class DatabaseUtil {
                 .mapToOneOrDefault(new Func1<Cursor, String>() {
                     @Override
                     public String call(Cursor cursor) {
-                        return LIST_EXIST_MAPPER.map(cursor);
+                        return DOWN_EXIST_MAPPER.map(cursor);
                     }
-                },"")
-                //失败返回空字符串
-                /*.onErrorResumeNext(new Func1<Throwable, Observable<? extends String>>() {
-                    @Override
-                    public Observable<? extends String> call(Throwable throwable) {
-                        return Observable.just("");
-                    }
-                })*/;
+                },"");
 
     }
 

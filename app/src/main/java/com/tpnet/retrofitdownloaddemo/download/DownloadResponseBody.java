@@ -1,6 +1,7 @@
 package com.tpnet.retrofitdownloaddemo.download;
 
-import com.tpnet.retrofitdownloaddemo.download.listener.IDownloadProgressListener;
+import com.tpnet.retrofitdownloaddemo.download.rxbus.ProgressEvent;
+import com.tpnet.retrofitdownloaddemo.download.rxbus.RxBus;
 
 import java.io.IOException;
 
@@ -23,24 +24,27 @@ public class DownloadResponseBody extends ResponseBody{
     private ResponseBody responseBody;
 
     //下载进度回调
-    private IDownloadProgressListener progressListener;   //下载进度监听器
+    //private IDownloadProgressListener progressListener;   //下载进度监听器
 
     private BufferedSource bufferedSource;
 
+    private String code;
 
     /**
      * 构造
      * @param responseBody 原始的responseBody
      //* @param progressListener 下线进度接口
      */
-    public DownloadResponseBody(ResponseBody responseBody, IDownloadProgressListener progressListener) {
+    public DownloadResponseBody(ResponseBody responseBody,String code/*, IDownloadProgressListener progressListener*/) {
         this.responseBody = responseBody;
      
-        this.progressListener = progressListener;
+        this.code = code;
+        //this.progressListener = progressListener;
         
         //更新数据长度，返回的总长度是减去断点续传的长度
-        progressListener.updateTotalLength(responseBody.contentLength());
-        progressListener.updateDowning();
+        //progressListener.updateTotalLength(responseBody.contentLength());
+        
+        //progressListener.updateDowning();
         
     }
 
@@ -84,9 +88,13 @@ public class DownloadResponseBody extends ResponseBody{
                 downBytes += bytesRead != -1 ? bytesRead : 0;
                 
                 //回调接口到Subscriber
-                if (null != progressListener) {
+               /* if (null != progressListener) {
                     progressListener.update(downBytes, responseBody.contentLength(), bytesRead == -1 && downBytes == responseBody.contentLength());
-                }
+                }*/
+
+                RxBus.getInstance()
+                        .send(code,new ProgressEvent(downBytes, responseBody.contentLength(), bytesRead == -1 && downBytes == responseBody.contentLength()));
+               
                 
                 return bytesRead;
             }

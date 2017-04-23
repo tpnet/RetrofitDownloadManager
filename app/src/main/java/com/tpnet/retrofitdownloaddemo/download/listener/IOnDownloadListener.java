@@ -26,12 +26,21 @@ public abstract class IOnDownloadListener<T> {
 
 
     /**
-     * 下载进度
+     * 下载进度，这个是拼命回调
      * @param downLength
      * @param totalLength
      */
-    public abstract void updateProgress(long downLength, long totalLength,int percent);
+    public abstract void updateLength(long downLength, long totalLength,int percent);
 
+
+    /**
+     * 下载进度，100，每个进度回调一次
+     * @param percent
+     */
+    public abstract void updatePercent(int percent);
+    
+    
+    
     /**
      * 失败或者错误
      * @param e 异常信息

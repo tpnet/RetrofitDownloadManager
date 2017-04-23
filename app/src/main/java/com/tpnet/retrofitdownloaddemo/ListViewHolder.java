@@ -21,7 +21,6 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
 /**
- * 
  * Created by litp on 2017/4/18.
  */
 
@@ -31,9 +30,6 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
     private TextView mTvName;
     private TextView mTvDownLength;
     private ProgressBar mPrbDown;
-
-    private String name;
-
 
     private DownInfo downInfo;
 
@@ -55,7 +51,7 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         this.downInfo = data;
 
         //添加view回调监听器
-        DownManager.getInstance().addListener(data.downUrl(),listener);
+        DownManager.getInstance().addListener(data.downUrl(), listener);
 
 
         switch (downInfo.downState()) {
@@ -86,7 +82,6 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                     @Override
                     public void call(String s) {
                         mTvName.setText(s);
-                        name = s;
                     }
                 });
 
@@ -177,21 +172,23 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         }
 
         @Override
-        public void updateProgress(long readLength, long totalLength, int percent) {
+        public void updateLength(long readLength, long totalLength, int percent) {
 
             Log.e("@@", "listsner onProgress下载中:" + percent + " " + readLength + " " + totalLength);
-
-            mBtHandle.setText("暂停");
-
-
-            //计算进度
-            mPrbDown.setProgress(percent);
-
+            
             //设置文本
             mTvDownLength.setText(
                     String.format("%s/%s"
                             , FileUtil.getFormatSize(readLength), FileUtil.getFormatSize(totalLength)));
 
+        }
+
+        @Override
+        public void updatePercent(int percent) {
+            mBtHandle.setText("暂停");
+
+            //计算进度
+            mPrbDown.setProgress(percent);
         }
     };
 
@@ -219,14 +216,14 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                 case DownInfo.DOWN_FINISH:
                     //需要打开
                     Log.e("@@", "点击了 完成");
-                    if (FileUtil.getExtensionName(downInfo.savePath()).equals("apk")){
+                    if (FileUtil.getExtensionName(downInfo.savePath()).equals("apk")) {
                         //如果是安装包、
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setDataAndType(Uri.fromFile(new File(downInfo.savePath())),
                                 "application/vnd.android.package-archive");
                         mBtHandle.getContext().startActivity(intent);
                     }
-                        
+
                     break;
 
             }

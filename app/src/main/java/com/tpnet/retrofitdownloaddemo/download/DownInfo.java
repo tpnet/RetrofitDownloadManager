@@ -23,9 +23,6 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     public final static int DOWN_ING = 0x4;         //下载中
     public final static int DOWN_FINISH = 0x5;      //完成
     
- 
- 
-
     
     public static final Factory<DownInfo> FACTORY = new Factory<>(new DownInfoModel.Creator<DownInfo>() {
         @Override
@@ -38,7 +35,10 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     public static final RowMapper<DownInfo> LIST_ROW_MAPPER = FACTORY.selectAllMapper();
     
     
-    public static final RowMapper<String> LIST_EXIST_MAPPER = FACTORY.selectDowninfoSavePathMapper();
+    public static final RowMapper<String> DOWN_EXIST_MAPPER = FACTORY.selectDowninfoSavePathMapper();
+    
+    
+    public static final RowMapper<Long> TOTALLENGTH_MAPPER = FACTORY.selectTotalLengthMapper();
     
     
     
@@ -59,7 +59,7 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
 
     public static Builder create(DownInfo downInfo) {
         return builder()
-                ._id(downInfo._id()) 
+                ._id(0) 
                 .savePath(downInfo.savePath())
                 .totalLength(downInfo.totalLength())
                 .downLength(downInfo.downLength())

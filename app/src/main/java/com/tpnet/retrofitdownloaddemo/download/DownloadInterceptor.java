@@ -1,7 +1,5 @@
 package com.tpnet.retrofitdownloaddemo.download;
 
-import com.tpnet.retrofitdownloaddemo.download.listener.IDownloadProgressListener;
-
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -15,11 +13,13 @@ import okhttp3.Response;
 public class DownloadInterceptor implements Interceptor {
     
     
-    private IDownloadProgressListener listener;
+    //private IDownloadProgressListener listener;
 
+    private String downUrl;
     //回调
-    public DownloadInterceptor(IDownloadProgressListener listener) {
-        this.listener = listener;
+    public DownloadInterceptor(String downUrl/*IDownloadProgressListener listener*/) {
+        //this.listener = listener;
+        this.downUrl = downUrl;
     }
 
    
@@ -30,7 +30,7 @@ public class DownloadInterceptor implements Interceptor {
         Response response = chain.proceed(chain.request());
 
         return response.newBuilder()
-                .body(new DownloadResponseBody(response.body(),listener))
+                .body(new DownloadResponseBody(response.body(),downUrl/*,listener*/))
                 .build();
     }
     
