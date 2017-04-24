@@ -14,8 +14,11 @@ import com.tpnet.retrofitdownloaddemo.download.DownManager;
 import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.utils.FileUtil;
+import com.tpnet.retrofitdownloaddemo.utils.ToastUtil;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -31,6 +34,10 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
     private TextView mTvDownLength;
     private ProgressBar mPrbDown;
 
+    private TextView mTvDownStartTime;
+    private TextView mTvDownFinishTime;
+
+
     private DownInfo downInfo;
 
     public ListViewHolder(View itemView) {
@@ -39,6 +46,8 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         mTvName = (TextView) itemView.findViewById(R.id.tv_name);
         mTvDownLength = (TextView) itemView.findViewById(R.id.tv_down_length);
         mPrbDown = (ProgressBar) itemView.findViewById(R.id.prb_down);
+        mTvDownStartTime = (TextView) itemView.findViewById(R.id.tv_down_start_time);
+        mTvDownFinishTime = (TextView) itemView.findViewById(R.id.tv_down_finish_time);
 
 
         mBtHandle.setOnClickListener(this);
@@ -49,9 +58,6 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
     public void setData(DownInfo data, int position) {
 
         this.downInfo = data;
-
-        //添加view回调监听器
-        DownManager.getInstance().addListener(data.downUrl(), listener);
 
 
         switch (downInfo.downState()) {
@@ -70,9 +76,21 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                 break;
             case DownInfo.DOWN_FINISH:
                 mBtHandle.setText("打开");
+
+                mTvDownFinishTime.setVisibility(View.VISIBLE);
+                //设置下载完成时间
+                mTvDownFinishTime.setText(
+                        String.format("完成时间: %s",
+                                new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(downInfo.finishTime())
+                        )
+                );
+
                 break;
 
         }
+
+        //添加view回调监听器,放在startDown后面，防止程序终止时候打开列表重新下载的问题
+        DownManager.getInstance().addListener(data.downUrl(), listener);
 
 
         //查询名字
@@ -99,6 +117,16 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
             mPrbDown.setProgress((int) (downInfo.downLength() * 100 / downInfo.totalLength()));
         }
 
+        //设置开始下载时间
+        if (downInfo.startTime() > 0) {
+            mTvDownStartTime.setText(
+                    String.format("开始时间: %s",
+                            new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(downInfo.startTime())
+                    )
+            );
+
+        }
+
 
     }
 
@@ -114,6 +142,13 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                     .downState(DownInfo.DOWN_FINISH)
                     .build();
 
+            mTvDownFinishTime.setVisibility(View.VISIBLE);
+            //设置下载完成时间
+            mTvDownFinishTime.setText(
+                    String.format("完成时间: %s",
+                            SimpleDateFormat.getInstance().format(new Date(downInfo.finishTime()))
+                    )
+            );
 
         }
 
@@ -124,6 +159,11 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
             downInfo = DownInfo.create(downInfo)
                     .downState(DownInfo.DOWN_START)
                     .build();
+            mTvDownStartTime.setText(
+                    String.format("开始时间: %s",
+                            SimpleDateFormat.getInstance().format(new Date(downInfo.startTime()))
+                    )
+            );
 
         }
 
@@ -174,8 +214,8 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
         @Override
         public void updateLength(long readLength, long totalLength, int percent) {
 
-            Log.e("@@", "listsner onProgress下载中:" + percent + " " + readLength + " " + totalLength);
-            
+            //Log.e("@@", "listsner updateLength下载中:" + percent + " " + readLength + " " + totalLength);
+
             //设置文本
             mTvDownLength.setText(
                     String.format("%s/%s"
@@ -185,6 +225,10 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
 
         @Override
         public void updatePercent(int percent) {
+
+            Log.e("@@", "listsner updatePercent更新进度:" + percent);
+
+
             mBtHandle.setText("暂停");
 
             //计算进度
@@ -222,6 +266,11 @@ class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickList
                         intent.setDataAndType(Uri.fromFile(new File(downInfo.savePath())),
                                 "application/vnd.android.package-archive");
                         mBtHandle.getContext().startActivity(intent);
+                    } else if (downInfo.downType().equals("application/octet-stream")) {
+
+                        ToastUtil.show("文件类型: 二进制流，不知道文件类型。" + downInfo.downType());
+                    } else {
+                        ToastUtil.show("文件类型: " + downInfo.downType());
                     }
 
                     break;

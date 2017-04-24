@@ -84,8 +84,8 @@ public class DownManager {
                 ,downSubs.get(info.downUrl()).getDownInfo()
                 ,downSubs.get(info.downUrl()).getService()
                 ,downSubs.get(info.downUrl()).getPrePercent());
-                
-                downSubs.remove(info.downUrl());
+
+                //downSubs.remove(info.downUrl());
                 //覆盖订阅者
                 downSubs.put(info.downUrl(), subscriber);
             }else{
@@ -111,7 +111,7 @@ public class DownManager {
 
             downSubs.get(info.downUrl()).setService(service);
 
-            //插入数据库
+            //插入下载信息到数据库
             DatabaseUtil.getInstance().insertDownInfo(downSubs.get(info.downUrl()).getDownInfo());
 
         }
@@ -127,12 +127,17 @@ public class DownManager {
                     @Override
                     public DownInfo call(ResponseBody responseBody) {
 
-                        Log.e("@@", "数据回调map call保存到文件: contentLength=" + responseBody.contentLength());
+                        Log.e("@@", "数据回调map call保存到文件: contentLength=" + responseBody.contentLength() + " 类型:" + responseBody.contentType().toString());
 
                         //更新总长度
-                        downSubs.get(info.downUrl()).updateTotalLength(responseBody.contentLength());
+                        DatabaseUtil.getInstance().updateTotalLength(responseBody.contentLength(), info.downUrl());
+
+                        //更新类型
+                        DatabaseUtil.getInstance().updateDownType(responseBody.contentType().toString(), info.downUrl());
+
                         //更新下载中状态
-                        downSubs.get(info.downUrl()).updateDowning();
+                        DatabaseUtil.getInstance()
+                                .updateState(DownInfo.DOWN_ING, info.downUrl());
 
                         try {
                             FileUtil.writeFile(responseBody, new File(downSubs.get(info.downUrl()).getDownInfo().savePath()), downSubs.get(info.downUrl()).getDownInfo());
@@ -182,11 +187,47 @@ public class DownManager {
 
 
     /**
+     * 开始下载调用，更新下载时间
+     *
+     */
+    public void onStartDown(String downUrl) {
+
+        //更新开始的下载状态到数据库
+        DatabaseUtil.getInstance()
+                .updateState(DownInfo.DOWN_START, downUrl);
+
+        //更新开始下载时间到数据库
+        DatabaseUtil.getInstance()
+                .updateStartTime(downUrl);
+    }
+
+
+    /**
+     * 完成下载调用
+     *
+     * @param downUrl
+     */
+    public void onFinishDown(String downUrl) {
+
+
+        //更新下载完成状态
+        DatabaseUtil.getInstance()
+                .updateState(DownInfo.DOWN_FINISH, downUrl);
+
+        //更新完成下载时间到数据库
+        DatabaseUtil.getInstance()
+                .updateFinishTime(downUrl);
+
+        remove(downUrl);
+    }
+
+
+    /**
      * 停止下载,进度设置为0，状态未开始
      *
      * @param info
      */
-    public void stopDown(final DownInfo info) {
+    public void stopDown(DownInfo info) {
 
 
         if (handleDown(info, DownInfo.DOWN_STOP) > 0) {
@@ -203,7 +244,7 @@ public class DownManager {
      *
      * @param info
      */
-    public void errorDown(final DownInfo info, final Throwable e) {
+    public void errorDown(DownInfo info, final Throwable e) {
 
         if (handleDown(info, DownInfo.DOWN_ERROR) > 0) {
             if (downSubs.get(info.downUrl()).getListener() != null) {
@@ -251,6 +292,21 @@ public class DownManager {
 
 
     /**
+     * 回调更新下载长度到数据库，在DownManager统一管理数据库。
+     *
+     * @param downLength
+     * @param downUrl
+     */
+    public void onSetDownLength(long downLength, String downUrl) {
+
+        //更新下载长度到数据库
+        DatabaseUtil.getInstance()
+                .updateDownLength(downLength, downUrl);
+
+    }
+
+
+    /**
      * 停止全部下载
      */
     public void stopAllDown() {
@@ -280,10 +336,10 @@ public class DownManager {
     /**
      * 移除下载数据
      *
-     * @param info
+     * @param downUrl
      */
-    public void remove(DownInfo info) {
-        downSubs.remove(info.downUrl());
+    public void remove(String downUrl) {
+        downSubs.remove(downUrl);
     }
 
  

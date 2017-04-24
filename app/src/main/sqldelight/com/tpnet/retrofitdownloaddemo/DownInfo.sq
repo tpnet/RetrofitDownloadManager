@@ -10,6 +10,9 @@ create table downinfo(
     -- 文件url，唯一约束
     downUrl TEXT NOT NULL UNIQUE, 
     
+    -- 文件类型
+    downType TEXT NOT NULL, 
+    
     -- 保存在手机的路径
     savePath TEXT NOT NULL,
     
@@ -55,31 +58,38 @@ SELECT totalLength FROM downinfo WHERE downUrl = ?;
 
 -- 插入下载任务,如果存在则不插入
 insertDowninfo:
-INSERT OR IGNORE INTO downinfo (savePath,totalLength,downLength,downState,downUrl,startTime,finishTime) values (?,?,?,?,?,?,?);
+INSERT OR IGNORE INTO downinfo (downUrl,downType,savePath,totalLength,downLength,downState,startTime,finishTime) values (?,?,?,?,?,?,?,?);
 
 
 -- 更新某条记录的下载进度
 updateDownLength:
-update downinfo SET downLength = ? WHERE downUrl = ?;
+UPDATE downinfo SET downLength = ? WHERE downUrl = ?;
 
 -- 更新某条记录的总长度
 updateTotalLength:
-update downinfo SET totalLength = ? WHERE downUrl = ?;
+UPDATE downinfo SET totalLength = ? WHERE downUrl = ?;
 
 -- 更新某条记录的下载状态
 updateDownState:
-update downinfo SET downState = ? WHERE downUrl = ?;
+UPDATE downinfo SET downState = ? WHERE downUrl = ?;
 
+-- 更新某条记录的开始时间
 
+updateDownStartTime:
+UPDATE downinfo SET startTime = ? WHERE downUrl = ?;
 
 -- 更新某条记录的完成时间
 updateDownFinishTime:
-update downinfo SET finishTime = ? WHERE downUrl = ?;
+UPDATE downinfo SET finishTime = ? WHERE downUrl = ?;
 
 -- 更新某条记录的所有信息
 updateDowninfo:
-update downinfo SET savePath = ?,totalLength = ?,downLength = ?,downState = ?,startTime = ?,finishTime = ? WHERE downUrl = ?;
+UPDATE downinfo SET savePath = ?,totalLength = ?,downLength = ?,downState = ?,startTime = ?,finishTime = ? WHERE downUrl = ?;
 
+-- 更新文件类型
+
+updateDownType:
+UPDATE downinfo SET downType = ? WHERE downUrl = ?;
 
 -- 删除指定下载任务
 delDown:

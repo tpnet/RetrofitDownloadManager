@@ -23,9 +23,9 @@
         android:textSize="18sp"
         android:layout_toLeftOf="@id/bt_handle"
         />
-    
 
 
+    <!-- 下载大小 -->
     <TextView
         android:id="@+id/tv_down_length"
         android:layout_width="wrap_content"
@@ -33,14 +33,35 @@
         android:gravity="left"
         android:layout_below="@id/tv_name"
         android:layout_alignParentLeft="true"
-        /> 
-    
-    
+        />
+
+    <!-- 下载开始时间 -->
+    <TextView
+        android:id="@+id/tv_down_start_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:layout_below="@id/tv_down_length"
+        android:layout_alignParentLeft="true"
+        />
+
+
+    <!-- 完成时间 -->
+    <TextView
+        android:id="@+id/tv_down_finish_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:layout_below="@id/tv_down_start_time"
+        android:visibility="gone"
+        android:layout_alignParentLeft="true"
+        />
+
     <ProgressBar
         android:id="@+id/prb_down"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_down_length"
+        android:layout_below="@id/tv_down_finish_time"
         android:secondaryProgress="100"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         />

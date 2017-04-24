@@ -11,7 +11,7 @@ CREATE TABLE program (
     --FOREIGN KEY (downLink) REFERENCES downinfo(downUrl)
     
 );
-        
+
 -- 联合查询，根据program表中的url来查询这里的记录
 selectDownName:
 SELECT program.name FROM program WHERE downLink = ? LIMIT 1;

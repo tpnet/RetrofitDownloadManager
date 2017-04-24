@@ -2,7 +2,6 @@ package com.tpnet.retrofitdownloaddemo.download;
 
 import android.util.Log;
 
-import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.download.listener.DownInterface;
 import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
 import com.tpnet.retrofitdownloaddemo.download.rxbus.Events;
@@ -38,11 +37,9 @@ public class DownSubscriber<T> extends Subscriber<T> {
     private int prePercent = 0;  //上一次的进度，防止频繁更新View
 
 
-    private long preDownLength;  // 上一次下载的进度
-
-
     public DownSubscriber(DownInfo downInfo) {
         this(null, downInfo, null, 0);
+
     }
 
 
@@ -119,17 +116,16 @@ public class DownSubscriber<T> extends Subscriber<T> {
 
         setDownloadState(DownInfo.DOWN_START);
 
-        Log.e("@@", "开始更新状态为开始");
+        //更新bean的下载完成时间,可更新可以不更新
 
-        //更新数据库
-        DatabaseUtil.getInstance()
-                .updateState(DownInfo.DOWN_START, downInfo.downUrl());
+        DownManager.getInstance().onStartDown(downInfo.downUrl());
+        
 
     }
 
 
     /**
-     * 下载完成
+     * 完成回调
      */
     @Override
     public void onCompleted() {
@@ -161,6 +157,7 @@ public class DownSubscriber<T> extends Subscriber<T> {
 
 
     /**
+     * 下载完成
      * @param t
      */
     @Override
@@ -172,15 +169,15 @@ public class DownSubscriber<T> extends Subscriber<T> {
             listener.get().onNext(t);
         }
 
+
         //AutoValue标注的bean不能setter，需要重新new一个
         setDownloadState(DownInfo.DOWN_FINISH);
 
-        //更新状态
-        DatabaseUtil.getInstance()
-                .updateState(DownInfo.DOWN_FINISH, downInfo.downUrl());
+        //更新bean的下载完成时间,可更新可以不更新
 
+        DownManager.getInstance().onFinishDown(downInfo.downUrl());
+        
 
-        DownManager.getInstance().remove(downInfo);
     }
 
 
@@ -200,8 +197,8 @@ public class DownSubscriber<T> extends Subscriber<T> {
         } else if (downInfo.totalLength() < total) {
             builder.totalLength(total);
         }
-        
-        Log.e("@@", "下载长度" + downLength);
+
+        //Log.e("@@", "下载长度" + downLength);
         
         //如果已经解除订阅了，代表暂停停止出错了，不更新状态了
         if (!isUnsubscribed()) {
@@ -217,8 +214,6 @@ public class DownSubscriber<T> extends Subscriber<T> {
                 .map(new Func1<Long, Integer>() {
                     @Override
                     public Integer call(Long aLong) {
-                        
-                        
                         return (int) (100 * downInfo.downLength() / downInfo.totalLength());
 
                     }
@@ -228,21 +223,19 @@ public class DownSubscriber<T> extends Subscriber<T> {
                     @Override
                     public void call(Integer percent) {
                         
-                        
                         if (percent > prePercent) {
                             
                             prePercent = percent;
 
                             //更新下载长度到数据库
-                            DatabaseUtil.getInstance()
-                                    .updateDownLength(downInfo.downLength(), downInfo.downUrl());
+                            DownManager.getInstance()
+                                    .onSetDownLength(downInfo.downLength(), downInfo.downUrl());
                             
                             if(listener != null && listener.get() != null && !isUnsubscribed()){
                                 //回调进度
                                 listener.get().updatePercent(percent);
 
                             }
-                            
                             
                         }else{
                             if(listener != null && listener.get() != null && !isUnsubscribed()){
@@ -251,11 +244,6 @@ public class DownSubscriber<T> extends Subscriber<T> {
 
                             }
                         }
-                        
-                        
-                        
-                        
-                        
                             
                     }
                 });
@@ -265,29 +253,24 @@ public class DownSubscriber<T> extends Subscriber<T> {
     }
 
 
-    public void updateTotalLength(long totalLength) {
-        Log.e("@@", "文件长度:" + totalLength);
-        DatabaseUtil.getInstance().updateTotalLength(totalLength, downInfo.downUrl());
-
-    }
-
-    //更新下载中状态
-    public void updateDowning() {
-        DatabaseUtil.getInstance()
-                .updateState(DownInfo.DOWN_ING, downInfo.downUrl());
-    }
-
-
+    /**
+     * 设置当前的下载状态
+     *
+     * @param state
+     */
     public void setDownloadState(@DownState int state) {
+
         Log.e("@@", "sub更新状态" + state);
+
         this.downInfo = DownInfo.create(downInfo)
                 .downState(state)
                 .build();
 
 
         //更新下载长度到数据库
-        DatabaseUtil.getInstance()
-                .updateDownLength(downInfo.downLength(), downInfo.downUrl());
+        DownManager.getInstance()
+                .onSetDownLength(downInfo.downLength(), downInfo.downUrl());
     }
+
 
 }

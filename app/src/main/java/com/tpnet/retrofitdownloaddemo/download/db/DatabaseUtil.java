@@ -26,6 +26,7 @@ import static com.tpnet.retrofitdownloaddemo.download.DownInfo.DOWN_EXIST_MAPPER
 import static com.tpnet.retrofitdownloaddemo.download.DownInfo.TOTALLENGTH_MAPPER;
 
 /**
+ * 数据库操作类，单例
  * Created by litp on 2017/4/10.
  */
 
@@ -126,11 +127,11 @@ public class DatabaseUtil {
     public void insertDownInfo(DownInfo downInfo) {
 
         //插入下载信息
-        DownInfo.InsertDowninfo insertDowninfo = new DownInfoModel.InsertDowninfo(db.getWritableDatabase());
-        insertDowninfo.bind(downInfo.savePath(), downInfo.totalLength(), downInfo.downLength(), downInfo.downState(), downInfo.downUrl(),
+        DownInfo.InsertDowninfo insert = new DownInfoModel.InsertDowninfo(db.getWritableDatabase());
+        insert.bind(downInfo.downUrl(), downInfo.downType(), downInfo.savePath(), downInfo.totalLength(), downInfo.downLength(), downInfo.downState(), 
                 downInfo.startTime(), downInfo.finishTime());
 
-        insertDowninfo.program.executeInsert();
+        insert.program.executeInsert();
 
     }
 
@@ -160,13 +161,49 @@ public class DatabaseUtil {
 
     //更新下载状态
     public Integer updateState(@DownState  int state,  String url) {
-        
-        DownInfo.UpdateDownState updateDownState = new DownInfoModel.UpdateDownState(db.getWritableDatabase());
-        updateDownState.bind(state, url);
-        int row = updateDownState.program.executeUpdateDelete();
+
+        DownInfo.UpdateDownState update = new DownInfoModel.UpdateDownState(db.getWritableDatabase());
+        update.bind(state, url);
+        int row = update.program.executeUpdateDelete();
         Log.e("@@", "更新数据库下载状态" + state);
         return row;
 
+
+    }
+
+    /**
+     * 更新开始下载的时间
+     */
+    public void updateStartTime(String downUrl) {
+
+        Observable.just(downUrl)
+                .observeOn(Schedulers.computation())
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        DownInfoModel.UpdateDownStartTime update = new DownInfoModel.UpdateDownStartTime(db.getWritableDatabase());
+                        update.bind(System.currentTimeMillis(), s);
+                        update.program.executeUpdateDelete();
+                    }
+                });
+
+    }
+
+
+    /**
+     * 更新完成下载的时间
+     */
+    public void updateFinishTime(String downUrl) {
+        Observable.just(downUrl)
+                .observeOn(Schedulers.computation())
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        DownInfoModel.UpdateDownFinishTime update = new DownInfoModel.UpdateDownFinishTime(db.getWritableDatabase());
+                        update.bind(System.currentTimeMillis(), s);
+                        update.program.executeUpdateDelete();
+                    }
+                });
 
     }
 
@@ -202,9 +239,28 @@ public class DatabaseUtil {
                         update.program.executeUpdateDelete();
                     }
                 });
-        
-        
 
+    }
+
+
+    /**
+     * 更新下载类型
+     *
+     * @param type
+     * @param downUrl
+     */
+    public void updateDownType(final String type, final String downUrl) {
+        Observable.just(downUrl)
+                .observeOn(Schedulers.computation())
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        DownInfoModel.UpdateDownType update = new DownInfoModel.UpdateDownType(db.getWritableDatabase());
+                        update.bind(type, s);
+                        update.program.executeUpdateDelete();
+                    }
+                });
+        
     }
 
 
@@ -219,10 +275,14 @@ public class DatabaseUtil {
         return updateDowninfo.program.executeUpdateDelete();
     }
 
+    /**
+     * 获取保存的手机路径
+     * @param downUrl
+     * @return
+     */
     public Observable<String> getDownSavePath(String downUrl) {
         SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selectDowninfoSavePath(downUrl);
         return db.createQuery(DownInfo.TABLE_NAME, sqlDelightStatement.statement, sqlDelightStatement.args)
-                
                 .mapToOneOrDefault(new Func1<Cursor, String>() {
                     @Override
                     public String call(Cursor cursor) {
