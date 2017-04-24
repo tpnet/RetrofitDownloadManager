@@ -15,7 +15,7 @@ import com.squareup.sqldelight.RowMapper;
 public abstract class Program implements Parcelable,ProgramModel{
 
 
-   
+
 
     public static final Factory<Program> FACTORY = new Factory<>(new ProgramModel.Creator<Program>() {
         @Override
@@ -23,9 +23,7 @@ public abstract class Program implements Parcelable,ProgramModel{
             return new AutoValue_Program(_id,downLink,name);
         }
     });
-    
-    
-    
+
 
     public static Program create(String downLink, String name) {
         return builder()
@@ -34,16 +32,8 @@ public abstract class Program implements Parcelable,ProgramModel{
                 .name(name)
                 .build();
     }
-    
-    
-    public static Program create(Program program) {
-        return builder()
-                .downLink(program.downLink())
-                .name(program.name())
-                .build();
-    }
-    
-    
+
+ 
     public static Builder builder() {
         return new AutoValue_Program.Builder();
     }
@@ -63,10 +53,6 @@ public abstract class Program implements Parcelable,ProgramModel{
 
     //查询title映射
     public final static RowMapper<String> ROW_NAMW_MAPPER = FACTORY.selectDownNameMapper();
-
-    
-    
-    
 
 
 }

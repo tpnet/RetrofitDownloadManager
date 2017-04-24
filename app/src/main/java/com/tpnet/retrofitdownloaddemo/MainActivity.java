@@ -13,11 +13,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.tpnet.retrofitdownloaddemo.download.DownInfo;
-import com.tpnet.retrofitdownloaddemo.download.DownManager;
-import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
+import com.tpnet.downmanager.download.DownInfo;
+import com.tpnet.downmanager.download.DownManager;
+import com.tpnet.downmanager.download.db.DBUtil;
+import com.tpnet.downmanager.utils.ToastUtil;
+import com.tpnet.retrofitdownloaddemo.utils.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.utils.FileUtil;
-import com.tpnet.retrofitdownloaddemo.utils.ToastUtil;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.io.File;
@@ -99,7 +100,7 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
     //创建下载
     private void down(final String url, final String name) {
         //判断时候已经在下载列表了
-        DatabaseUtil.getInstance().getDownSavePath(url)
+        DBUtil.getInstance().getDownSavePath(url)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<String>() {
                     @Override
@@ -191,18 +192,17 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
     //开始下载
     private void startDown(String url, String name) {
 
-        //监听器可以在viewHolder里面设置
+
+        Program program = Program.create(url, name);
+        //插入到下载bean
+        DatabaseUtil.getInstance().insertProgrmm(program);
+
+
+        //回调View的监听器，在viewHolder里面设置
         DownInfo downInfo = DownInfo.builder()
                 .savePath(getPath(url))
                 .downUrl(url)
                 .create();
-
-
-        Program program = Program.create(url, name);
-
-        //插入到下载bean
-        DatabaseUtil.getInstance().insertProgrmm(program);
-
         //开始下载
         DownManager.getInstance().startDown(downInfo);
     }

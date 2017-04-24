@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.facebook.stetho.Stetho;
+import com.tpnet.downmanager.download.DownManager;
 
 /**
  * 
@@ -25,6 +26,10 @@ public class BaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        //初始化下载器
+        DownManager.init(this);
+        
         instance = this;
         Stetho.initializeWithDefaults(this);
     }

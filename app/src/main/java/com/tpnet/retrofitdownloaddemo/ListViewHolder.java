@@ -9,12 +9,12 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.tpnet.retrofitdownloaddemo.download.DownInfo;
-import com.tpnet.retrofitdownloaddemo.download.DownManager;
-import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
-import com.tpnet.retrofitdownloaddemo.download.listener.IOnDownloadListener;
+import com.tpnet.downmanager.download.DownInfo;
+import com.tpnet.downmanager.download.DownManager;
+import com.tpnet.downmanager.download.listener.IOnDownloadListener;
+import com.tpnet.downmanager.utils.ToastUtil;
+import com.tpnet.retrofitdownloaddemo.utils.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.utils.FileUtil;
-import com.tpnet.retrofitdownloaddemo.utils.ToastUtil;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -24,6 +24,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
 /**
+ * 
  * Created by litp on 2017/4/18.
  */
 

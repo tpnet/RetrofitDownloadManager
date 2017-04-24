@@ -5,7 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.tpnet.retrofitdownloaddemo.download.DownInfo;
+import com.tpnet.downmanager.download.DownInfo;
 
 import java.util.ArrayList;
 import java.util.List;

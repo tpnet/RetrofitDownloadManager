@@ -1,7 +1,7 @@
  -- 下载的bean类
 CREATE TABLE program (
     
-      -- 自动增长id
+    -- 自动增长id
     _id INTEGER AS Integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     
     downLink TEXT UNIQUE,   -- 唯一约束

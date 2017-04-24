@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/DownManager/DownManager.iml" filepath="$PROJECT_DIR$/DownManager/DownManager.iml" />
       <module fileurl="file://$PROJECT_DIR$/RetrofitDownloadDemo.iml" filepath="$PROJECT_DIR$/RetrofitDownloadDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

@@ -2,16 +2,9 @@ package com.tpnet.retrofitdownloaddemo.utils;
 
 import android.os.Environment;
 
-import com.tpnet.retrofitdownloaddemo.download.DownInfo;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.math.BigDecimal;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-
-import okhttp3.ResponseBody;
 
 /**
  * 文件操作工具类
@@ -19,43 +12,6 @@ import okhttp3.ResponseBody;
  */
 
 public class FileUtil {
-
-    /**
-     * 写入文件
-     *
-     * @param file
-     * @param info
-     * @throws IOException
-     */
-    public static void writeFile(ResponseBody responseBody, File file, DownInfo info) throws IOException {
-
-        createDirectory(file.getAbsolutePath(), true);
-
-
-        long allLength = info.totalLength() <= 0 ? responseBody.contentLength() : info.totalLength();
-
-        //文件通道形式，比文件流快1/3
-        FileChannel channelOut = null;   //输出的通道
-
-        //随机访问文件，可以指定断电续传起始位置
-        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rwd");
-        channelOut = randomAccessFile.getChannel();
-
-        MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE,
-                info.downLength(), allLength - info.downLength());
-
-        byte[] buffer = new byte[1024 * 8];  //8k
-        int len;
-        int record = 0;
-        while ((len = responseBody.byteStream().read(buffer)) != -1) {
-            mappedBuffer.put(buffer, 0, len);
-            record += len;
-        }
-        
-        responseBody.byteStream().close();
-        channelOut.close();
-        randomAccessFile.close();
-    }
 
     public static boolean checkSDcard() {
         return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());

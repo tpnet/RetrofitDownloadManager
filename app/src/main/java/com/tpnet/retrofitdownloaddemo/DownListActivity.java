@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.tpnet.retrofitdownloaddemo.download.db.DatabaseUtil;
+import com.tpnet.downmanager.download.db.DBUtil;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import rx.android.schedulers.AndroidSchedulers;
@@ -37,7 +37,7 @@ public class DownListActivity extends RxAppCompatActivity {
         mRcvList.setAdapter(adapter);
 
         //查询当前所有的下载
-        DatabaseUtil.getInstance().getAllDown()
+        DBUtil.getInstance().getAllDown()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(adapter);
         
