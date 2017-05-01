@@ -125,7 +125,7 @@ public class DownSubscriber<T> extends Subscriber<T> {
 
 
     /**
-     * 完成回调
+     * 完成回调，这个是Rxjava的发射回调，不做处理，
      */
     @Override
     public void onCompleted() {
@@ -161,23 +161,22 @@ public class DownSubscriber<T> extends Subscriber<T> {
     @Override
     public void onNext(T t) {
         Log.e("@@", "onNext下载完毕");
-        ToastUtil.show("下载完毕");
+        //ToastUtil.show("下载完毕");
 
-        if (listener != null && listener.get() != null) {
-            listener.get().onNext(t);
-        }
-
-
-        //AutoValue标注的bean不能setter，需要重新new一个
-        setDownloadState(DownInfo.DOWN_FINISH);
-
-        //更新bean的下载完成时间,可更新可以不更新
-
+        //更新bean的下载完成时间,状态,可更新可以不更新，成功回调onNext
         DownManager.getInstance().onFinishDown(downInfo.downUrl());
         
-
     }
 
+    //在DownManager调用
+    public void onNext() {
+        if (listener != null && listener.get() != null) {
+            listener.get().onNext(downInfo);
+        }
+        setDownloadState(DownInfo.DOWN_FINISH);
+    }
+    
+    
 
     //下载进度回调
     public void update(long down, final long total, final boolean finish) {

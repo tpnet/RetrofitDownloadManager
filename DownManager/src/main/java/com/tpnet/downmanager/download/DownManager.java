@@ -21,6 +21,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -148,6 +149,7 @@ public class DownManager {
                 //在线程中下载
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
+                .retry(3)  //失败重试三次
                 .map(new Func1<ResponseBody, DownInfo>() {    //写入文件
                     @Override
                     public DownInfo call(ResponseBody responseBody) {
@@ -232,18 +234,45 @@ public class DownManager {
      *
      * @param downUrl
      */
-    public void onFinishDown(String downUrl) {
+    public void onFinishDown(final String downUrl) {
 
 
-        //更新下载完成状态
-        DBUtil.getInstance()
-                .updateState(DownInfo.DOWN_FINISH, downUrl);
+        //判断下载长度和总长度是否一样，一样才是下载完成，否则下载错误
+        DBUtil.getInstance().getDownLengthIsEqual(downUrl)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean aBoolean) {
+                        if (aBoolean) {
 
-        //更新完成下载时间到数据库
-        DBUtil.getInstance()
-                .updateFinishTime(downUrl);
+                            //回调完成
+                            downSubs.get(downUrl).onNext();
 
-        remove(downUrl);
+                            //更新下载完成状态
+                            DBUtil.getInstance()
+                                    .updateState(DownInfo.DOWN_FINISH, downUrl);
+
+                            //更新完成下载时间到数据库
+                            DBUtil.getInstance()
+                                    .updateFinishTime(downUrl);
+
+                            remove(downUrl);
+
+                        } else {
+                            //下载失败
+                            downSubs.get(downUrl).onError(new Throwable("onNext下载失败，下载长度不一样"));
+
+                        }
+
+
+                    }
+                });
+        
+
+
+
+
+       
     }
 
 

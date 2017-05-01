@@ -41,6 +41,8 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     
     public static final RowMapper<Long> TOTALLENGTH_MAPPER = FACTORY.selectTotalLengthMapper();
 
+    public static final RowMapper<Long> LENGTHISEQUAL_MAPPER = FACTORY.selctDownLengthIsEqualMapper();
+
 /*
 
     public static DownInfo create(String downUrl, String downType, String savePath, long totalLength, long downLength, int downState, long startTime, long finishTime, long pauseTime, long allTime) {

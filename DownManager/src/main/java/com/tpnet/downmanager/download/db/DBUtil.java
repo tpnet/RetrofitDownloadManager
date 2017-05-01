@@ -266,4 +266,25 @@ public class DBUtil {
     }
 
 
+    /**
+     * 判断下载长度和总长度是否一致
+     *
+     * @param downUrl
+     */
+    public Observable<Boolean> getDownLengthIsEqual(String downUrl) {
+        SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selctDownLengthIsEqual(downUrl);
+        return db.createQuery(DownInfo.TABLE_NAME, sqlDelightStatement.statement, sqlDelightStatement.args)
+                .mapToOne(new Func1<Cursor, Long>() {
+                    @Override
+                    public Long call(Cursor cursor) {
+                        return DownInfo.LENGTHISEQUAL_MAPPER.map(cursor);
+                    }
+                })
+                .map(new Func1<Long, Boolean>() {
+                    @Override
+                    public Boolean call(Long aLong) {
+                        return aLong > 0;
+                    }
+                });
+    }
 }

@@ -51,6 +51,11 @@ SELECT savePath FROM downinfo WHERE downUrl = ?;
 selectTotalLength:
 SELECT totalLength FROM downinfo WHERE downUrl = ?;
 
+--判断下载长度和总长度是否一致
+
+selctDownLengthIsEqual:
+SELECT count(*) FROM downinfo WHERE downUrl = ? AND downLength == totalLength;
+
 -- 插入下载任务,如果存在则不插入
 insertDowninfo:
 INSERT OR IGNORE INTO downinfo (downUrl,downType,savePath,totalLength,downLength,downState,startTime,finishTime) values (?,?,?,?,?,?,?,?);

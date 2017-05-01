@@ -13,12 +13,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.tbruyelle.rxpermissions.RxPermissions;
 import com.tpnet.downmanager.download.DownInfo;
 import com.tpnet.downmanager.download.DownManager;
 import com.tpnet.downmanager.download.db.DBUtil;
 import com.tpnet.downmanager.utils.ToastUtil;
 import com.tpnet.retrofitdownloaddemo.utils.DatabaseUtil;
 import com.tpnet.retrofitdownloaddemo.utils.FileUtil;
+import com.tpnet.retrofitdownloaddemo.utils.PermissUtil;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.io.File;
@@ -57,7 +59,23 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
         mBtnAddOne.setOnClickListener(this);
         mBtnAddTwo.setOnClickListener(this);
         mBtnList.setOnClickListener(this);
-        
+
+
+        //请求读写文件权限
+        PermissUtil.externalStorage(new PermissUtil.RequestPermission() {
+            @Override
+            public void onRequestPermissionSuccess() {
+
+            }
+
+            @Override
+            public void onRequestPermissionFail() {
+                ToastUtil.show("获取存储权限失败");
+                mBtnAddOne.setEnabled(false);
+                mBtnAddTwo.setEnabled(false);
+                mBtnList.setEnabled(false);
+            }
+        }, new RxPermissions(this));
         
 
 
@@ -200,8 +218,8 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
 
         //回调View的监听器，在viewHolder里面设置
         DownInfo downInfo = DownInfo.builder()
-                .savePath(getPath(url))
-                .downUrl(url)
+                .savePath(getPath(url))   //文件保存的路径
+                .downUrl(url)               //下载的url，要全路径
                 .create();
         //开始下载
         DownManager.getInstance().startDown(downInfo);
