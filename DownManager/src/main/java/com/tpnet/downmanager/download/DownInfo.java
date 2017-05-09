@@ -27,8 +27,8 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     
     public static final Factory<DownInfo> FACTORY = new Factory<>(new DownInfoModel.Creator<DownInfo>() {
         @Override
-        public DownInfo create(@NonNull long _id, @NonNull String downUrl, String downType, @NonNull String savePath, long totalLength, long downLength, int downState, long startTime, long finishTime) {
-            return new AutoValue_DownInfo(_id, downUrl, downType, savePath, totalLength, downLength, downState, startTime, finishTime);
+        public DownInfo create(@NonNull long _id, @NonNull String downUrl, String downName, String downType, @NonNull String savePath, long totalLength, long downLength, int downState, long startTime, long finishTime) {
+            return new AutoValue_DownInfo(_id, downUrl, downName, downType, savePath, totalLength, downLength, downState, startTime, finishTime);
         }
     });
     
@@ -41,14 +41,12 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
     
     public static final RowMapper<Long> TOTALLENGTH_MAPPER = FACTORY.selectTotalLengthMapper();
 
-    public static final RowMapper<Long> LENGTHISEQUAL_MAPPER = FACTORY.selctDownLengthIsEqualMapper();
 
-/*
-
-    public static DownInfo create(String downUrl, String downType, String savePath, long totalLength, long downLength, int downState, long startTime, long finishTime, long pauseTime, long allTime) {
+    public static DownInfo create(String downUrl, String downName, String downType, String savePath, long totalLength, long downLength, int downState, long startTime, long finishTime, long pauseTime, long allTime) {
         return builder()
                 ._id(0)  //id自动增长的
                 .downUrl(downUrl)
+                .downName(downName)
                 .downType(downType)
                 .savePath(savePath)
                 .totalLength(totalLength)
@@ -59,12 +57,12 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
                 .build();
     }
 
-*/
 
     public static Builder create(DownInfo downInfo) {
         return builder()
                 ._id(0)
                 .downUrl(downInfo.downUrl())
+                .downName(downInfo.downName())
                 .downType(downInfo.downType())
                 .savePath(downInfo.savePath())
                 .totalLength(downInfo.totalLength())
@@ -87,7 +85,10 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
       
         public abstract Builder _id(long id);
 
-        public abstract Builder downUrl(String downUrl);
+        public abstract Builder downUrl(String downUrl)
+                ;
+
+        public abstract Builder downName(String downName);
 
         public abstract Builder downType(String downType);
         
@@ -107,10 +108,16 @@ public abstract class DownInfo implements Parcelable,DownInfoModel{
         
         public abstract DownInfo build();
 
-        //创建任务初始化其他参数
-        public DownInfo create(){
+        //创建基本任务 
+        public DownInfo create(String savePath, String downUrl, String downName) {
             
             _id(0);
+
+            downUrl(downUrl);
+
+            savePath(savePath);
+
+            downName(downName);
 
             downType("");
             

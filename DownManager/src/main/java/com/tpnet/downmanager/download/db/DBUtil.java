@@ -99,7 +99,7 @@ public class DBUtil {
 
         //插入下载信息
         DownInfo.InsertDowninfo insert = new DownInfoModel.InsertDowninfo(db.getWritableDatabase());
-        insert.bind(downInfo.downUrl(), downInfo.downType(), downInfo.savePath(), downInfo.totalLength(), downInfo.downLength(), downInfo.downState(),
+        insert.bind(downInfo.downUrl(), downInfo.downName(), downInfo.downType(), downInfo.savePath(), downInfo.totalLength(), downInfo.downLength(), downInfo.downState(),
                 downInfo.startTime(), downInfo.finishTime());
 
         insert.program.executeInsert();
@@ -243,7 +243,7 @@ public class DBUtil {
      */
     public Integer updateDowninfo(DownInfo downInfo) {
         DownInfoModel.UpdateDowninfo updateDowninfo = new DownInfoModel.UpdateDowninfo(db.getWritableDatabase());
-        updateDowninfo.bind(downInfo.savePath(), downInfo.totalLength(), downInfo.downLength(), downInfo.downState(), downInfo.startTime(), downInfo.finishTime(), downInfo.downUrl());
+        updateDowninfo.bind(downInfo.downName(), downInfo.savePath(), downInfo.totalLength(), downInfo.downLength(), downInfo.downState(), downInfo.startTime(), downInfo.finishTime(), downInfo.downUrl());
         return updateDowninfo.program.executeUpdateDelete();
     }
 
@@ -267,24 +267,18 @@ public class DBUtil {
 
 
     /**
-     * 判断下载长度和总长度是否一致
+     * 判断下载总长度
      *
      * @param downUrl
      */
-    public Observable<Boolean> getDownLengthIsEqual(String downUrl) {
-        SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selctDownLengthIsEqual(downUrl);
+    public Observable<Long> getDownTotalLength(String downUrl) {
+        SqlDelightStatement sqlDelightStatement = DownInfo.FACTORY.selectTotalLength(downUrl);
         return db.createQuery(DownInfo.TABLE_NAME, sqlDelightStatement.statement, sqlDelightStatement.args)
-                .mapToOne(new Func1<Cursor, Long>() {
+                .mapToOneOrDefault(new Func1<Cursor, Long>() {
                     @Override
                     public Long call(Cursor cursor) {
-                        return DownInfo.LENGTHISEQUAL_MAPPER.map(cursor);
+                        return TOTALLENGTH_MAPPER.map(cursor);
                     }
-                })
-                .map(new Func1<Long, Boolean>() {
-                    @Override
-                    public Boolean call(Long aLong) {
-                        return aLong > 0;
-                    }
-                });
+                }, 0L);
     }
 }

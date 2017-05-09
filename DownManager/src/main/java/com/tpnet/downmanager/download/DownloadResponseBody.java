@@ -1,8 +1,6 @@
 package com.tpnet.downmanager.download;
 
 
-import android.util.Log;
-
 import com.tpnet.downmanager.download.rxbus.ProgressEvent;
 import com.tpnet.downmanager.download.rxbus.RxBus;
 
@@ -89,10 +87,6 @@ public class DownloadResponseBody extends ResponseBody{
                 //组合已经下载了的字节数
                 downBytes += bytesRead != -1 ? bytesRead : 0;
 
-
-                Log.e("@@", "读前：" + bytesRead + " 读后:" + downBytes);
-
-                
                 //回调接口到Subscriber
                /* if (null != progressListener) {
                     progressListener.update(downBytes, responseBody.contentLength(), bytesRead == -1 && downBytes == responseBody.contentLength());

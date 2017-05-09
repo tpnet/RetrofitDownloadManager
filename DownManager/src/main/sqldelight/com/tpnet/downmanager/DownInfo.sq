@@ -10,6 +10,9 @@ create table downinfo(
     -- 文件url，唯一约束
     downUrl TEXT NOT NULL UNIQUE, 
     
+    --下载名称
+    downName TEXT,
+    
     -- 文件类型
     downType TEXT NOT NULL, 
     
@@ -51,14 +54,10 @@ SELECT savePath FROM downinfo WHERE downUrl = ?;
 selectTotalLength:
 SELECT totalLength FROM downinfo WHERE downUrl = ?;
 
---判断下载长度和总长度是否一致
-
-selctDownLengthIsEqual:
-SELECT count(*) FROM downinfo WHERE downUrl = ? AND downLength == totalLength;
 
 -- 插入下载任务,如果存在则不插入
 insertDowninfo:
-INSERT OR IGNORE INTO downinfo (downUrl,downType,savePath,totalLength,downLength,downState,startTime,finishTime) values (?,?,?,?,?,?,?,?);
+INSERT OR IGNORE INTO downinfo (downUrl,downName,downType,savePath,totalLength,downLength,downState,startTime,finishTime) values (?,?,?,?,?,?,?,?,?);
 
 -- 更新某条记录的下载进度
 updateDownLength:
@@ -83,7 +82,7 @@ UPDATE downinfo SET finishTime = ? WHERE downUrl = ?;
 
 -- 更新某条记录的所有信息
 updateDowninfo:
-UPDATE downinfo SET savePath = ?,totalLength = ?,downLength = ?,downState = ?,startTime = ?,finishTime = ? WHERE downUrl = ?;
+UPDATE downinfo SET downName = ? ,savePath = ?,totalLength = ?,downLength = ?,downState = ?,startTime = ?,finishTime = ? WHERE downUrl = ?;
 
 -- 更新文件类型
 
@@ -91,7 +90,8 @@ updateDownType:
 UPDATE downinfo SET downType = ? WHERE downUrl = ?;
 
 -- 删除指定下载任务
-delDown:
+
+delDowninfo:
 DELETE FROM downinfo WHERE downUrl = ?;
 
 

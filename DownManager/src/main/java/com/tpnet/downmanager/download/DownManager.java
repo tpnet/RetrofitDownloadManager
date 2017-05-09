@@ -6,6 +6,7 @@ import android.util.Log;
 import com.tpnet.downmanager.download.db.DBUtil;
 import com.tpnet.downmanager.download.listener.DownInterface;
 import com.tpnet.downmanager.download.listener.IOnDownloadListener;
+import com.tpnet.downmanager.download.rxbus.RxBus;
 import com.tpnet.downmanager.utils.Constant;
 import com.tpnet.downmanager.utils.FileUtil;
 
@@ -36,6 +37,8 @@ public class DownManager {
     //回调观察者队列,downUrl标识，暂停和错误都会取消订阅对应的观察者
     private Map<String, DownSubscriber<DownInfo>> downSubs;
 
+
+    public final static String DOWN_ADD_SUBSCRIBE = "down_add_subscribe";
 
     //单例
     private volatile static DownManager INSTANCE;
@@ -117,12 +120,15 @@ public class DownManager {
             }else{
                 subscriber = downSubs.get(info.downUrl());
             }
-            
-        } else {  //第一次下载
+
+        } else {  //重新简历下载对象
 
             subscriber = new DownSubscriber<DownInfo>(info);
             //更新订阅者
             downSubs.put(info.downUrl(), subscriber);
+
+            //发送添加监听者给holder
+            RxBus.getInstance().send(DownManager.DOWN_ADD_SUBSCRIBE, info.downUrl() + DownManager.DOWN_ADD_SUBSCRIBE);
         }
 
         
@@ -206,7 +212,7 @@ public class DownManager {
     //添加view回调监听器
     public void addListener(String downUrl, IOnDownloadListener<DownInfo> listener) {
         if (downSubs.get(downUrl) != null) {
-            Log.e("@@", "添加监听器" + downUrl);
+            Log.e("@@", "添加回调View监听器" + downUrl);
             downSubs.get(downUrl).setListener(listener);
 
         }
@@ -236,15 +242,16 @@ public class DownManager {
      */
     public void onFinishDown(final String downUrl) {
 
-
         //判断下载长度和总长度是否一样，一样才是下载完成，否则下载错误
-        DBUtil.getInstance().getDownLengthIsEqual(downUrl)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Boolean>() {
-                    @Override
-                    public void call(Boolean aBoolean) {
-                        if (aBoolean) {
 
+        DBUtil.getInstance().getDownTotalLength(downUrl)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+
+                        if (aLong == downSubs.get(downUrl).getDownInfo().downLength()) {
+                            //
                             //回调完成
                             downSubs.get(downUrl).onNext();
 
@@ -257,7 +264,6 @@ public class DownManager {
                                     .updateFinishTime(downUrl);
 
                             remove(downUrl);
-
                         } else {
                             //下载失败
                             downSubs.get(downUrl).onError(new Throwable("onNext下载失败，下载长度不一样"));
@@ -267,12 +273,7 @@ public class DownManager {
 
                     }
                 });
-        
 
-
-
-
-       
     }
 
 
