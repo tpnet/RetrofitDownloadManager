@@ -29,9 +29,11 @@ public class ListAdapter extends RecyclerView.Adapter<ListViewHolder> implements
     }
 
     @Override
-    public void onBindViewHolder(ListViewHolder holder, int position) {
+    public void onBindViewHolder(final ListViewHolder holder, final int position) {
         //在Holder里面设置数据
+
         holder.setData(list.get(position), position);
+
     }
 
     @Override

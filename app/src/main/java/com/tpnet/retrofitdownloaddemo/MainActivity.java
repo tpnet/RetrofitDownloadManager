@@ -204,8 +204,6 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
         }
     }
     
-  
-    
     
     //开始下载
     private void startDown(String url, String name) {
@@ -216,11 +214,9 @@ public class MainActivity extends RxAppCompatActivity implements View.OnClickLis
         DatabaseUtil.getInstance().insertProgrmm(program);
 
 
-        //回调View的监听器，在viewHolder里面设置
-        DownInfo downInfo = DownInfo.builder()
-                .savePath(getPath(url))   //文件保存的路径
-                .downUrl(url)               //下载的url，要全路径
-                .create();
+        //创建基本任务，参数为:文件保存的路径、下载的url要全路径、下载任务的名称
+        DownInfo downInfo = DownInfo.builder().create(getPath(url), url, name);
+        
         //开始下载
         DownManager.getInstance().startDown(downInfo);
     }

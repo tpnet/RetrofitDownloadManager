@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
 
     <Button
@@ -12,37 +12,36 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         />
-    
-    
+
+
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_toLeftOf="@id/bt_handle"
         android:gravity="center_vertical"
         android:maxLines="1"
         android:textSize="18sp"
-        android:layout_toLeftOf="@id/bt_handle"
         />
 
 
-    <!-- 下载大小 -->
+    <!-- 下载状态 -->
     <TextView
-        android:id="@+id/tv_down_length"
+        android:id="@+id/tv_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="left"
-        android:layout_below="@id/tv_name"
         android:layout_alignParentLeft="true"
-        />
+
+        android:layout_below="@id/tv_name"/>
 
     <!-- 下载开始时间 -->
     <TextView
         android:id="@+id/tv_down_start_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="left"
-        android:layout_below="@id/tv_down_length"
         android:layout_alignParentLeft="true"
+        android:layout_below="@id/tv_state"
+        android:gravity="left"
         />
 
 
@@ -51,21 +50,32 @@
         android:id="@+id/tv_down_finish_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="left"
-        android:layout_below="@id/tv_down_start_time"
-        android:visibility="gone"
         android:layout_alignParentLeft="true"
+        android:layout_below="@id/tv_down_start_time"
+        android:gravity="left"
+        android:visibility="gone"
         />
+
+
+    <!-- 下载大小 -->
+    <TextView
+        android:id="@+id/tv_down_length"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/tv_down_finish_time"
+        android:gravity="left"
+        />
+
 
     <ProgressBar
         android:id="@+id/prb_down"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_down_finish_time"
+        android:layout_below="@id/tv_down_length"
         android:secondaryProgress="100"
-        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         />
-    
 
-    
+
 </RelativeLayout>
