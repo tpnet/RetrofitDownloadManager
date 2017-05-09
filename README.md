@@ -20,10 +20,9 @@ DownManager.init(this):
 #### **3. 添加下载**
 
 ```
-        DownInfo downInfo = DownInfo.builder()
-                .savePath(getPath(url))   //文件保存的路径
-                .downUrl(url)               //下载的url，要全路径
-                .create();
+        //创建基本任务，参数为:文件保存的路径、下载的url要全路径、下载任务的名称
+        DownInfo downInfo = DownInfo.builder().create(getPath(url), url, name);
+        
         //开始下载
         DownManager.getInstance().startDown(downInfo);
 ```
@@ -39,8 +38,49 @@ DownManager.init(this):
 
 #### **5. 设置view的回调监听器**
 
-注意要在startDown之后设置监听器，例如demo里面的ListViewHolder
+注意要设置两个View的回调监听器
+ - 第一个是ViewHold初始化时候设置Rxbus
+ - 第二个是onBindHolder的时候addListener
 
+
+```
+   public ListViewHolder(View itemView) {
+        super(itemView);
+        // 初始化View
+
+        mBtHandle.setOnClickListener(this);
+
+        //因为(downInfo.downUrl()用来传递进度信息，这里使用两个(downInfo.downUrl()进行标识
+        RxBus.with().setEvent(DownManager.DOWN_ADD_SUBSCRIBE)
+                .onNext(new Action1<Events<?>>() {
+                    @Override
+                    public void call(Events<?> events) {
+                        //添加监听器，在列表点击开始回调
+                        String link = events.getContent();
+                        link = link.replace(DownManager.DOWN_ADD_SUBSCRIBE, "");
+                        DownManager.getInstance().addListener(link, listener);
+
+                    }
+                }).create();
+
+    }
+
+
+
+```
+
+
+```
+    @Override
+    public void onBindViewHolder(final ListViewHolder holder, final int position) {
+        //在Holder里面设置数据
+ 
+
+        //添加View监听器
+        DownManager.getInstance().addListener(downInfo.downUrl(), listener);
+
+    }
+```
 
 
 
