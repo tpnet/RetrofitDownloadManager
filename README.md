@@ -1,4 +1,4 @@
-# RetrofitDownloadDemo
+# RetrofitDownloadManager
 Rxjava+Retrofit+SqlBrite+SqlDelight 实现多文件断点续传下载。
 
 了解源码请看文章： http://blog.csdn.net/niubitianping/article/details/70599355
